@@ -4,7 +4,8 @@
 }
 
 body {
-  color: white;
+  margin:0;
+  overflow-x:hidden!important;
   background-color: #888;
   -webkit-font-smoothing: antialiased;
 }
@@ -17,13 +18,14 @@ body {
 
 .navTitle {
   font-size: 2em;
-  color: white;
+  color:white;
   font-weight: 600;
 }
 
 .navbar {
-  background: linear-gradient(to top right, #444444, #1723b1);
+  background: linear-gradient(to top right, #868686, #000000);
   padding: 0 !important;
+  max-height:70px;
 }
 
 .navbar-brand img {
@@ -70,9 +72,7 @@ body {
 
 /* --------- Banner ---------- */
 .banner {
-  background: linear-gradient(to top right, #fbff00, #ff00ea);
   color: #fff;
-  padding-top: 2.5%;
 }
 
 .promo-title {
@@ -188,8 +188,14 @@ body {
 
 /* ----- Footer ------*/
 #footer {
-  background: linear-gradient(to top right, #444444, #1723b1);
-  color: #fff;
+  padding-top:100px;
+  height:100%;
+  width:100%;
+  position: absolute;
+  top:0px;
+  left:0px;
+  color: white;
+  background: linear-gradient(to top right, #868686, #000000);
 }
 
 .footer-img {
@@ -278,12 +284,12 @@ a:hover {
 
 /*--------------------------*/
 
-.takeBtn {
+.hexBtn {
   box-shadow: none !important;
   width:auto;
   min-width: 8rem;
   min-height: 50px;
-  border: 5px black solid;
+  border: 5px white solid;
   border-radius: 50px;
   background: linear-gradient(to top right, #fbff00, #ff00ea);
   color: white;
@@ -293,9 +299,11 @@ a:hover {
   padding-right:10px;
 }
 
-.takeBtn:hover {
+.hexBtn:hover {
   transform: scale(1.2);
   color: #fff;
+  border: 3px white solid;
+  transition: all linear 0.3s;
 }
 
 
@@ -325,55 +333,7 @@ a:hover {
   font-weight: bold;
 }
 
-.container {
-  perspective: 800px;
-}
-
-#menu {}
-
-#main {
-  display: none;
-}
-
-#aboutMenu {}
-
-#mainMarket {
-  display: none;
-  text-align: center;
-  padding-bottom: 50px;
-}
-
-#myMarket {
-  display: none;
-  text-align: center;
-  padding-bottom: 50px;
-}
-
-#closedMarket {
-  display: none;
-  text-align: center;
-  padding-bottom: 50px;
-}
-
 #errorMsg {
-  display: none;
-  color: red;
-  background-color: white;
-  border-radius: 2px;
-  margin-bottom: 5px;
-  padding: 5px 10px 5px 10px;
-}
-
-#successMsg {
-  display: none;
-  color: green;
-  background-color: white;
-  border-radius: 2px;
-  margin-bottom: 5px;
-  padding: 5px 10px 5px 10px;
-}
-
-#takeErrorMsg {
   display: none;
   color: red;
   position: fixed;
@@ -387,7 +347,7 @@ a:hover {
   z-index:99;
 }
 
-#takeSuccessMsg {
+#successMsg {
   display: none;
   color: green;
   position: fixed;
@@ -490,40 +450,6 @@ td i:hover {
   text-shadow: 0px 0px 2px #fbff00;
   transition: all 0.3s;
 }
-
-iframe{
-  border: 0px none; 
-  margin-left: 0px; 
-  height: 700px; 
-  margin-top: -100px; 
-  width: 100%;
-}
-
-@media(max-width:785px){
-  iframe{
-    height: 1150px;
-  }
-}
-
-#tornadoCash{
-  background: white;
-  color:black;
-  padding-bottom:2rem;
-}
-
-@keyframes playPulse {
-  0% {
-    transform: scale(1);
-  }
-
-  50% {
-    transform: scale(1.2);
-  }
-
-  100% {
-    transform: scale(1);
-  }
-}
 .hexLink {
   animation-name:pulse;
   animation-duration: 2s;
@@ -543,4 +469,28 @@ iframe{
   100% {
     text-shadow:0px 0px 0px yellow;
   }
+}
+
+footer{
+  background: linear-gradient(to top right, #868686, #000000);
+  font-weight:700;
+  height:75px;
+  width:100%;
+  position: absolute; 
+  bottom:-75px; 
+  padding-top:25px;
+  z-index:100;
+}
+
+#tab{
+  background-color: white;
+  border:2px solid black;
+  border-radius:5px;
+  width:50px;
+  height:50px;
+  position: absolute;
+  z-index:10;
+  top:70px;
+  right:0px;
+
 }

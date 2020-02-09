@@ -1,39 +1,18 @@
-var tornadoCash = '<h3 class="title text-center"><b>ANONYMIZE ETH</b></h3><br/><br/><div style="overflow: hidden; height:auto; width:100%; text-align: center; margin:0; padding:0;"><iframe scrolling="no" src="https://tornado.cash"></iframe></div><div style="width:100%; font-size:22px; padding:15px;" class="text-center"><a href="https://tornado.cash"><i style="color:black" class="fa fa-link"></i></a>&nbsp;Make your ETH anonymous with <a href="https://tornado.cash" target="_blank" style="color:black;">tornado.cash</a> and trade discreetly at <b>HEX</b>OTC</div>';
 
-
-function ShowMarket(screen) {
-  if (screen == 0) {
-    $("#menu").fadeOut(1000, function () {
-      $("#main").fadeIn(1000);
-      Connect();
-      setTimeout(function () {
-        ToggleFix();
-      }, 250);
+var hidden;
+var body = document.getElementById("body");
+function ToggleFooter() {
+  if (!hidden) {
+    $("#footer").slideUp(1000, function () {
+      hidden = true;
+      body.style.overflowY = "hidden";
     });
-    $("#menuAbout").fadeOut(1000, function () {
-      $("#mainMarket").fadeIn(1000);
+  }
+  else{
+    $("#footer").slideDown(1000, function () {
+      hidden = false;
+      body.style.overflowY = "none";
     });
-  } else if (screen == 1) {
-    $("#main").fadeOut(1000, function () {
-      $("#menu").fadeIn(1000);
-    });
-    $("#mainMarket").fadeOut(1000, function () {
-      $("#menuAbout").fadeIn(1000);
-    });
-    $("#myMarket").fadeOut(1000);
-    $("#closedMarket").fadeOut(1000);
-  } else if (screen == 2) {
-    $("#mainMarket").fadeOut(1000, function () {
-      $("#myMarket").fadeIn(1000);
-    });
-  } else if (screen == 3) {
-    $("#mainMarket").fadeOut(1000, function () {
-      $("#closedMarket").fadeIn(1000);
-    });
-  } else if (screen == 4) {
-    $("#myMarket").fadeOut(1000);
-    $("#closedMarket").fadeOut(1000);
-    $("#mainMarket").fadeIn(1000);
   }
 }
 
@@ -238,7 +217,7 @@ async function TakeOffer(elem, fillType) {
 }
 
 function ApproveUpdate() {
-  var approvedHex = document.getElementById("approvedHex");
+ /* var approvedHex = document.getElementById("approvedHex");
   hexContract.methods.allowance(activeAccount, otcContractAddress).call({
       from: activeAccount
     })
@@ -246,6 +225,7 @@ function ApproveUpdate() {
       console.log(result);
       approvedHex.innerHTML = result / 10 ** decimals;
     })
+    */
 }
 
 function ApproveHex() {
