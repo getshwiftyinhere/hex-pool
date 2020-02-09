@@ -48,8 +48,8 @@ contract PoolEvents {
     
 }
 
-//DRIP token contract
-contract DRIP is IERC20{
+//POOL token contract
+contract POOL is IERC20{
     
     using SafeMath for uint256;
 
@@ -58,8 +58,8 @@ contract DRIP is IERC20{
     mapping (address => mapping (address => uint256)) private _allowances;
 
     uint256 internal _totalSupply;
-    string public constant name = "DRIP";
-    string public constant symbol = "DRIP";
+    string public constant name = "HEXPOOL";
+    string public constant symbol = "POOL";
     uint public constant decimals = 8;
 
     /**
@@ -268,10 +268,10 @@ contract DRIP is IERC20{
     event Approval(address indexed owner, address indexed spender, uint256 value);
     
     ///////////////////////////////////////////////////////////////////////
-    ////////////////////////////////PUBLIC FACING - DRIP CONTROL//////////
+    ////////////////////////////////PUBLIC FACING - POOL CONTROL//////////
     ////////////////////////////////////////////////////////////////////
     
-    //drip balance of caller
+    //POOL balance of caller
     function poolTokenBalance()
         public
         view 
@@ -280,19 +280,19 @@ contract DRIP is IERC20{
         return balanceOf(msg.sender);
     }
     
-    //mint drip to msg.sender
-    function mintDrip(uint hearts)
+    //mint POOL to msg.sender
+    function mintPool(uint hearts)
         internal
         returns(bool)
     {
-        uint drip = SafeMath.div(hearts, 100);
+        uint amt = SafeMath.div(hearts, 100);
         address minter = msg.sender;
-        _mint(minter, drip);//mint DRIP - 1% of total heart value before fees @ 10 DRIP for 1000 HEX
+        _mint(minter, amt);//mint POOL - 1% of total heart value before fees @ 10 POOL for 1000 HEX
         return true;
     }
 }
 
-contract HEXPOOL is DRIP, PoolEvents {
+contract HEXPOOL is POOL, PoolEvents {
     
     ///////////////////////////////////////////////////////////////////////
     ////////////////////////////////CONTRACT SETUP///////////////////////
@@ -514,8 +514,8 @@ contract HEXPOOL is DRIP, PoolEvents {
             //entry info
             updateEntryData(_hearts, pool.poolId, ref);
         }
-        //mint bonus DRIP tokens relative to HEX amount before fees
-        require(mintDrip(hearts), "Error: could not mint tokens");
+        //mint bonus POOL tokens relative to HEX amount before fees
+        require(mintPool(hearts), "Error: could not mint tokens");
         return true;
     }
     
@@ -561,7 +561,7 @@ contract HEXPOOL is DRIP, PoolEvents {
         uint256 oldBalance = getContractBalance();
         //find the stake index then
         //end stake
-        hexInterface.stakeEnd(getStakeByStakeId(address(this), pool.hexStakeId).stakeIndex, pool.hexStakeId);
+        hexInterface.stakeEnd(getStakeIndexById(address(this), pool.hexStakeId), pool.hexStakeId);
         pool.stakeEnded = true;
         //calc stakeValue and stakeProfit
         uint256 stakeValue = SafeMath.sub(getContractBalance(), oldBalance);
@@ -1037,6 +1037,7 @@ contract HEXPOOL is DRIP, PoolEvents {
                         isAutoStake);
     }
     
+    
     function getStakeByStakeId(address addr, uint40 sid)
     private
     view
@@ -1069,6 +1070,35 @@ contract HEXPOOL is DRIP, PoolEvents {
                                 stakedDays,
                                 unlockedDay,
                                 isAutoStake);
+            }
+        }
+    }
+    
+    function getStakeIndexById(address addr, uint40 sid)
+        private
+        view
+        returns (uint)
+    {
+        uint40 stakeId;
+        uint72 stakedHearts;
+        uint72 stakeShares;
+        uint16 lockedDay;
+        uint16 stakedDays;
+        uint16 unlockedDay;
+        bool isAutoStake;
+
+        uint256 stakeCount = hexInterface.stakeCount(addr);
+        for(uint256 i = 0; i < stakeCount; i++){
+            (stakeId,
+            stakedHearts,
+            stakeShares,
+            lockedDay,
+            stakedDays,
+            unlockedDay,
+            isAutoStake) = hexInterface.stakeLists(addr, i);
+
+            if(stakeId == sid){
+                return i;
             }
         }
     }
