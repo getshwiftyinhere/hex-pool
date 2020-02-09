@@ -45,7 +45,6 @@ contract PoolEvents {
         uint indexed poolId,
         uint hexStakeId
     );
-    
 }
 
 //POOL token contract
@@ -350,7 +349,6 @@ contract HEXPOOL is POOL, PoolEvents {
         mapping  (address => bool) poolParticipant;
         mapping  (address => uint) userHeartValue;
         uint     stakeId;
-        uint     hexStakeIndex;
         uint40   hexStakeId;
         bool     isStaking;
         bool     isActive;
@@ -531,8 +529,6 @@ contract HEXPOOL is POOL, PoolEvents {
         uint hexStakeIndex = SafeMath.sub(hexInterface.stakeCount(address(this)), 1);//get the most recent stakeIndex
         SStore memory stake = getStakeByIndex(address(this), hexStakeIndex); //get stake from address and stakeindex
         //set pool stake id info
-        // You shouldn't set this as it's dynamic once you start ending stakes
-        //pool.hexStakeIndex = hexStakeIndex; 
         pool.hexStakeId = stake.stakeId;
         pool.stakeId = last_stake_id;
         pool.poolStakeStartTimestamp = now;
@@ -846,7 +842,7 @@ contract HEXPOOL is POOL, PoolEvents {
         view
         returns(uint stakeId, uint hexStakeIndex, uint40 hexStakeId)
     {
-        return(pools[poolId].stakeId, pools[poolId].hexStakeIndex, pools[poolId].hexStakeId);
+        return(pools[poolId].stakeId, getStakeIndexById(address(this), pools[poolId].hexStakeId), pools[poolId].hexStakeId);
     }
     
     //returns amount of users by address in a pool
