@@ -4,7 +4,7 @@ var delta = [ 0, 0 ];
 var stage = [ window.screenX, window.screenY, window.innerWidth, window.innerHeight ];
 getBrowserDimensions();
 
-var themes = [ "#999999", "#FFFFFF"];
+var themes = [ "#ADD8E6", "90ee90"];
 var theme;
 
 var worldAABB, world, iterations = 1, timeStep = 1 / 15;
@@ -27,10 +27,7 @@ var PI2 = Math.PI * 2;
 
 var timeOfLastTouch = 0;
 
-init();
-play();
-
-function init() {
+function initPools() {
 
 	canvas = document.getElementById( 'pools' );
 
@@ -43,8 +40,6 @@ function init() {
 	document.addEventListener( 'touchmove', onDocumentTouchMove, false );
 	document.addEventListener( 'touchend', onDocumentTouchEnd, false );
 
-	window.addEventListener( 'deviceorientation', onWindowDeviceOrientation, false );
-
 	// init box2d
 
 	worldAABB = new b2AABB();
@@ -55,6 +50,7 @@ function init() {
 
 	setWalls();
 	reset();
+	play();
 }
 
 
@@ -80,7 +76,7 @@ function reset() {
 
 	// color theme
 	theme = themes[ Math.random() * themes.length >> 0 ];
-	document.body.style[ 'backgroundColor' ] = theme[ 0 ];
+	//document.body.style[ 'backgroundColor' ] = theme[ 0 ];
 
 	bodies = [];
 	elements = [];
@@ -170,17 +166,6 @@ function onDocumentTouchEnd( event ) {
 
 }
 
-function onWindowDeviceOrientation( event ) {
-
-	if ( event.beta ) {
-
-		gravity.x = Math.sin( event.gamma * Math.PI / 180 );
-		gravity.y = Math.sin( ( Math.PI / 4 ) + event.beta * Math.PI / 180 );
-
-	}
-
-}
-
 /*function createInstructions() {
 
 	var size = 250;
@@ -244,7 +229,7 @@ function createPool( x, y ) {
 	var x = x || Math.random() * stage[2];
 	var y = y || Math.random() * -200;
 
-	var size = (Math.random() * 100 >> 0) + 20;
+	var size = (Math.random() * 100 >> 0) + 100;
 
     var element = document.createElement( 'div' );
 	element.width = size;
@@ -263,7 +248,7 @@ function createPool( x, y ) {
 
 	var graphics = circle.getContext( '2d' );
 
-	graphics.fillStyle = theme[ Math.random() ];
+	graphics.fillStyle = theme[Math.random()];
 	graphics.beginPath();
 	graphics.arc( size * .5, size * .5, size * .5, 0, PI2, true );
 	graphics.closePath();

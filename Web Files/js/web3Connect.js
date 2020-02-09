@@ -1122,19 +1122,17 @@ async function Connect() {
 						web3Found = true;
 						console.log("Web3 Found!");
 						console.log(web3.version);
+						document.getElementById("connectBtn").remove();
 					}
 				});
 				// Acccounts now exposed
 			} catch (error) {
 				// User denied account access...
-				if (!web3Found) {
-					web3Found = true;
 					web3 = new Web3(new Web3.providers.HttpProvider(infura));
 					console.error;
 					console.log("Defaulting to infura for view only");
-					errorMessage("Failed to connect to your wallet, allow access to use <b>HEX</b>OTC");
+					errorMessage("Failed to connect to your wallet, allow access to use <b>HEX</b>POOL");
 					return;
-				}
 			}
 		}
 		// Legacy dapp browsers...
@@ -1148,6 +1146,7 @@ async function Connect() {
 				CheckAccount();
 				CheckNetwork();
 				ShowUserAddress();
+				document.getElementById("connectBtn").remove();
 			}
 		}
 		// Non-dapp browsers...
@@ -1177,13 +1176,13 @@ function CheckAccount() {
 		} else if (accounts.length == 0) //is user logged in?
 		{
 			setTimeout(function () {
-				errorMessage("Login to your wallet and allow permissions to interact with <b>HEX</b>OTC");
+				errorMessage("Login to your wallet and allow permissions to interact with <b>HEX</b>POOL");
 			}, 5000);
 		} else {
 			account = accounts[0];
 			activeAccount = account;
 			web3.eth.defaultAccount = account;
-			ApproveUpdate();
+			//ApproveUpdate();
 			clearInterval(accountInterval);
 			//interval for account change
 			accountInterval = setInterval(function () {
@@ -1252,30 +1251,12 @@ function successMessage(text) {
 	}, 3000);
 }
 
-function takeErrorMessage(text) {
-	console.log(text);
-	document.getElementById("takeErrorMsg").innerHTML = '<i class="fa fa-exclamation-circle"></i>&nbsp;' + text;
-	document.getElementById("takeErrorMsg").style.display = "block";
-	setTimeout(function () {
-		$("#takeErrorMsg").fadeOut(1000);
-	}, 3000);
-}
-
-function takeSuccessMessage(text) {
-	console.log(text);
-	document.getElementById("takeSuccessMsg").innerHTML = '<i class="fa fa-exclamation-circle"></i>&nbsp;' + text;
-	document.getElementById("takeSuccessMsg").style.display = "block";
-	setTimeout(function () {
-		$("#takeSuccessMsg").fadeOut(1000);
-	}, 3000);
-}
-
 function ShowUserAddress() {
-	var elem = document.getElementById("userAddress");
+	//var elem = document.getElementById("userAddress");
 	if (web3 != "undefined") {
 		web3.eth.getAccounts(function (err, accounts) {
 			if (accounts.length != 0) {
-				elem.textContent = accounts[0];
+				//elem.textContent = accounts[0];
 				console.log('Detected Account - ' + accounts[0].toString());
 			}
 		});
