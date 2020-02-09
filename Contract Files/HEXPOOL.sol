@@ -48,8 +48,8 @@ contract PoolEvents {
     
 }
 
-//DRIP token contract
-contract DRIP is IERC20{
+//POOL token contract
+contract POOL is IERC20{
     
     using SafeMath for uint256;
 
@@ -58,8 +58,8 @@ contract DRIP is IERC20{
     mapping (address => mapping (address => uint256)) private _allowances;
 
     uint256 internal _totalSupply;
-    string public constant name = "DRIP";
-    string public constant symbol = "DRIP";
+    string public constant name = "HEXPOOL";
+    string public constant symbol = "POOL";
     uint public constant decimals = 8;
 
     /**
@@ -268,10 +268,10 @@ contract DRIP is IERC20{
     event Approval(address indexed owner, address indexed spender, uint256 value);
     
     ///////////////////////////////////////////////////////////////////////
-    ////////////////////////////////PUBLIC FACING - DRIP CONTROL//////////
+    ////////////////////////////////PUBLIC FACING - POOL CONTROL//////////
     ////////////////////////////////////////////////////////////////////
     
-    //drip balance of caller
+    //POOL balance of caller
     function poolTokenBalance()
         public
         view 
@@ -280,19 +280,19 @@ contract DRIP is IERC20{
         return balanceOf(msg.sender);
     }
     
-    //mint drip to msg.sender
-    function mintDrip(uint hearts)
+    //mint POOL to msg.sender
+    function mintPool(uint hearts)
         internal
         returns(bool)
     {
-        uint drip = SafeMath.div(hearts, 100);
+        uint amt = SafeMath.div(hearts, 100);
         address minter = msg.sender;
-        _mint(minter, drip);//mint DRIP - 1% of total heart value before fees @ 10 DRIP for 1000 HEX
+        _mint(minter, amt);//mint POOL - 1% of total heart value before fees @ 10 POOL for 1000 HEX
         return true;
     }
 }
 
-contract HEXPOOL is DRIP, PoolEvents {
+contract HEXPOOL is POOL, PoolEvents {
     
     ///////////////////////////////////////////////////////////////////////
     ////////////////////////////////CONTRACT SETUP///////////////////////
@@ -473,7 +473,8 @@ contract HEXPOOL is DRIP, PoolEvents {
             pool.poolParticipant[msg.sender] = true;
             poolUserCount[poolId]++;
         }
-        pool.userHeartValue[msg.sender] = SafeMath.add(pool.userHeartValue[msg.sender], _hearts); //TOTAL amount of hearts this user has input in THIS pool after fees (EntryInfo for individual pool entries)
+         //TOTAL amount of hearts this user has input in THIS pool after fees (EntryInfo for individual pool entries)
+        pool.userHeartValue[msg.sender] = SafeMath.add(pool.userHeartValue[msg.sender], _hearts);
         //send
         require(hexInterface.transferFrom(msg.sender, address(this), _hearts), "Transfer failed");//send hex from user to contract
         require(hexInterface.transferFrom(msg.sender, devAddress, _devFee), "Dev1 transfer failed");//send hex to dev
@@ -494,6 +495,8 @@ contract HEXPOOL is DRIP, PoolEvents {
             //entry info
             updateEntryData(_hearts.sub(remainderHearts), pool.poolId, ref);//remainder to be rolled to next pool
             pool.poolValue = pool.poolStakeThreshold;//set as max
+             //Back out the remainder value that is spilling into the next pool
+            pool.userHeartValue[msg.sender] = SafeMath.sub(pool.userHeartValue[msg.sender], remainderHearts);
             require(startStake(poolId, pool), "Error: could not start stake");
             require(newPool(pool.poolType, remainderHearts, ref), "Error: could not create new pool");//create new pool with remainder
         }
@@ -511,8 +514,8 @@ contract HEXPOOL is DRIP, PoolEvents {
             //entry info
             updateEntryData(_hearts, pool.poolId, ref);
         }
-        //mint bonus DRIP tokens relative to HEX amount before fees
-        require(mintDrip(hearts), "Error: could not mint tokens");
+        //mint bonus POOL tokens relative to HEX amount before fees
+        require(mintPool(hearts), "Error: could not mint tokens");
         return true;
     }
     
@@ -528,7 +531,8 @@ contract HEXPOOL is DRIP, PoolEvents {
         uint hexStakeIndex = SafeMath.sub(hexInterface.stakeCount(address(this)), 1);//get the most recent stakeIndex
         SStore memory stake = getStakeByIndex(address(this), hexStakeIndex); //get stake from address and stakeindex
         //set pool stake id info
-        pool.hexStakeIndex = hexStakeIndex;
+        // You shouldn't set this as it's dynamic once you start ending stakes
+        //pool.hexStakeIndex = hexStakeIndex; 
         pool.hexStakeId = stake.stakeId;
         pool.stakeId = last_stake_id;
         pool.poolStakeStartTimestamp = now;
@@ -553,10 +557,12 @@ contract HEXPOOL is DRIP, PoolEvents {
         PoolInfo storage pool = pools[poolId];
         require(pool.isStaking, "Error: pool is not yet staked, or has already ended staking");
         require(isPoolStakeFinished(poolId), "Error: cannot early unstake");
-        pool.stakeEnded = true;
+
         uint256 oldBalance = getContractBalance();
+        //find the stake index then
         //end stake
-        hexInterface.stakeEnd(pool.hexStakeIndex, pool.hexStakeId);
+        hexInterface.stakeEnd(getStakeIndexById(address(this), pool.hexStakeId), pool.hexStakeId);
+        pool.stakeEnded = true;
         //calc stakeValue and stakeProfit
         uint256 stakeValue = SafeMath.sub(getContractBalance(), oldBalance);
         pool.stakeValue = stakeValue;
@@ -599,10 +605,10 @@ contract HEXPOOL is DRIP, PoolEvents {
         returns (uint)
     {
         PoolInfo storage pool = pools[poolId];
+        require(pool.stakeEnded, "pool stake has not yet finished");
         if(pool.userHeartValue[msg.sender] == 0){
             return 0;
         }
-        require(pool.stakeEnded, "pool stake has not yet finished");
         uint stakeWithdrawable = SafeMath.div(SafeMath.mul(pool.stakeValue, pool.userHeartValue[msg.sender]), pool.poolStakeThreshold);//withdrawable rewards
         return stakeWithdrawable;
     }
@@ -644,7 +650,6 @@ contract HEXPOOL is DRIP, PoolEvents {
         UserInfo storage user = users[msg.sender];
         user.totalHeartsEntered = SafeMath.add(user.totalHeartsEntered, hearts);//total amount of hearts deposited by this user after fees
         user.userAddress = msg.sender;
-        users[msg.sender] = user;//update user data
     }
     
     //updates entry data
@@ -744,8 +749,7 @@ contract HEXPOOL is DRIP, PoolEvents {
         isReady
         returns(bool)
     {
-        PoolInfo memory pool = pools[poolId];
-        return pool.isActive;
+        return pools[poolId].isActive;
     }
     
     //
@@ -754,8 +758,7 @@ contract HEXPOOL is DRIP, PoolEvents {
         view
         returns(bool)
     {
-        PoolInfo memory pool = pools[poolId];
-        return pool.isStaking;
+        pools[poolId].isStaking;
     }
     
     //
@@ -764,34 +767,7 @@ contract HEXPOOL is DRIP, PoolEvents {
         view
         returns(bool)
     {
-        PoolInfo memory pool = pools[poolId];
-        if(pool.poolStakeDayLength == 3650){
-            if(SafeMath.add(pool.poolStakeStartTimestamp, 315360000) <= now){
-                return true;
-            }
-            else{
-                 return false;
-            }
-        }
-        else if(pool.poolStakeDayLength == 365){
-            if(SafeMath.add(pool.poolStakeStartTimestamp, 31536000) <= now){
-                 return true;
-            }
-            else{
-                 return false;
-            }
-        }
-        else if(pool.poolStakeDayLength == 1){//TEST
-            if(SafeMath.add(pool.poolStakeStartTimestamp, 86400) <= now){
-                 return true;
-            }
-            else{
-                 return false;
-            }
-        }
-        else{
-            return false;
-        }
+        return SafeMath.add(pools[poolId].poolStakeStartTimestamp, SafeMath.mul(pools[poolId].poolStakeDayLength, 86400)) <= now;
     }
     
     //
@@ -800,13 +776,7 @@ contract HEXPOOL is DRIP, PoolEvents {
         view
         returns(bool)
     {
-        PoolInfo memory pool = pools[poolId];
-        if(pool.stakeEnded){
-            return true;
-        }
-        else{
-            return false;
-        }
+        return pools[poolId].stakeEnded;
     }
     
     //general user info
@@ -1067,6 +1037,7 @@ contract HEXPOOL is DRIP, PoolEvents {
                         isAutoStake);
     }
     
+    
     function getStakeByStakeId(address addr, uint40 sid)
     private
     view
@@ -1099,6 +1070,35 @@ contract HEXPOOL is DRIP, PoolEvents {
                                 stakedDays,
                                 unlockedDay,
                                 isAutoStake);
+            }
+        }
+    }
+    
+    function getStakeIndexById(address addr, uint40 sid)
+        private
+        view
+        returns (uint)
+    {
+        uint40 stakeId;
+        uint72 stakedHearts;
+        uint72 stakeShares;
+        uint16 lockedDay;
+        uint16 stakedDays;
+        uint16 unlockedDay;
+        bool isAutoStake;
+
+        uint256 stakeCount = hexInterface.stakeCount(addr);
+        for(uint256 i = 0; i < stakeCount; i++){
+            (stakeId,
+            stakedHearts,
+            stakeShares,
+            lockedDay,
+            stakedDays,
+            unlockedDay,
+            isAutoStake) = hexInterface.stakeLists(addr, i);
+
+            if(stakeId == sid){
+                return i;
             }
         }
     }
