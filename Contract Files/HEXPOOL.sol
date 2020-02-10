@@ -576,7 +576,7 @@ contract HEXPOOL is POOL, PoolEvents {
         if(ref == address(0)){//no ref
             //hex refFee to divPool
             divPool = SafeMath.add(divPool, _refFee);
-            divPoolAllTime = SafeMath.add(divPool, _refFee);
+            divPoolAllTime = SafeMath.add(divPoolAllTime), _refFee);
         }
         else{//ref
             //hex refFee to ref
