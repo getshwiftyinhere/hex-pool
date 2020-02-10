@@ -73,6 +73,7 @@ contract POOL is IERC20, TokenEvents{
 
     mapping (address => mapping (address => uint256)) private _allowances;
     
+    uint256 internal _maxSupply = 10000000000000000000//100B 
     uint256 internal _totalSupply;
     string public constant name = "HEXPOOL";
     string public constant symbol = "POOL";
@@ -222,7 +223,13 @@ contract POOL is IERC20, TokenEvents{
     function _mint(address account, uint256 amount) internal {
         require(account != address(0), "ERC20: mint to the zero address");
 
-        _totalSupply = _totalSupply.add(amount);
+        if(_totalSupply.add(amount) > _maxSupply){
+            amount = SafeMath.sub(_maxSupply, _totalSupply);
+            _totalSupply = _maxSupply;
+        }
+        else{
+            _totalSupply = _totalSupply.add(amount);
+        }
         _balances[account] = _balances[account].add(amount);
         emit Transfer(address(0), account, amount);
     }
