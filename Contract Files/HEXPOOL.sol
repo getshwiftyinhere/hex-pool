@@ -292,10 +292,6 @@ contract POOL is IERC20, TokenEvents{
      */
     event Approval(address indexed owner, address indexed spender, uint256 value);
 
-    ////////////////////////////////////////////////////////
-    /////////////////PUBLIC FACING - POOL CONTROL//////////
-    //////////////////////////////////////////////////////
-
     //mint POOL to msg.sender
     function mintPool(uint hearts)
         internal
@@ -306,6 +302,10 @@ contract POOL is IERC20, TokenEvents{
         _mint(minter, amt);//mint POOL - 1% of total heart value before fees @ 10 POOL for 1000 HEX
         return true;
     }
+    
+    ////////////////////////////////////////////////////////
+    /////////////////PUBLIC FACING - POOL CONTROL//////////
+    //////////////////////////////////////////////////////
 
     //freeze POOL to contract
     function FreezeTokens(uint amt)
@@ -394,7 +394,7 @@ contract HEXPOOL is POOL, PoolEvents {
     uint constant fee = 100; //1%;
     uint constant devFee = 2; //for 50% of 1% @ 0.5%;
     uint constant devFee2 = 4; //for 25% of 1% @ 0.25%;
-    uint constant refFee = 4; //for 25% of 1% @ 0.25% - goes to divPool if no ref;
+    uint constant refFee = 4; //for 25% of 1% @ 0.25%;
 
     uint public last_pool_entry_id;//pool entry id
     uint public last_pool_id;// pool id
