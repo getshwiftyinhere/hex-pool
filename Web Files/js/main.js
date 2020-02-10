@@ -1,4 +1,3 @@
-
 var poolsInit;
 
 var hidden;
