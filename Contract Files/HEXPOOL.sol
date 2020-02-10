@@ -302,7 +302,7 @@ contract POOL is IERC20, TokenEvents{
         _mint(minter, amt);//mint POOL - 1% of total heart value before fees @ 10 POOL for 1000 HEX
         return true;
     }
-    
+
     ////////////////////////////////////////////////////////
     /////////////////PUBLIC FACING - POOL CONTROL//////////
     //////////////////////////////////////////////////////
@@ -394,7 +394,7 @@ contract HEXPOOL is POOL, PoolEvents {
     uint constant fee = 100; //1%;
     uint constant devFee = 2; //for 50% of 1% @ 0.5%;
     uint constant devFee2 = 4; //for 25% of 1% @ 0.25%;
-    uint constant refFee = 4; //for 25% of 1% @ 0.25%;
+    uint constant refFee = 4; //for 25% of 1% @ 0.25%; - goes to divPool if no ref;
 
     uint public last_pool_entry_id;//pool entry id
     uint public last_pool_id;// pool id
@@ -476,7 +476,7 @@ contract HEXPOOL is POOL, PoolEvents {
         require(false); //refunds any eth accidently sent to contract;
     }
     
-    function initializePools() 
+    function initializePools()
         internal
         onlyOwner
     {
