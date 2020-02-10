@@ -31,10 +31,10 @@ contract PoolEvents {
 
 //when a pool starts staking
     event PoolStartStake(
-        uint heartValue,//always 150m
+        uint indexed heartValue,//always 150m
         uint indexed dayLength,
         uint indexed poolId,
-        uint indexed hexStakeId
+        uint hexStakeId
     );
 
 //when a pool ends stake
@@ -47,20 +47,43 @@ contract PoolEvents {
     );
 }
 
-//POOL token contract
-contract POOL is IERC20{
+contract TokenEvents {
+
+//when a user enters a pool
+    event TokenFreeze(
+        address indexed user,
+        uint indexed poolValue
+    );
+    
+//when a user exits a pool
+    event TokenUnfreeze(
+        address indexed user,
+        uint indexed poolValue
+    );
+}
+
+//////////////////////////////////////
+//////////POOL TOKEN CONTRACT////////
+////////////////////////////////////
+contract POOL is IERC20, TokenEvents{
     
     using SafeMath for uint256;
 
     mapping (address => uint256) private _balances;
 
     mapping (address => mapping (address => uint256)) private _allowances;
-
+    
     uint256 internal _totalSupply;
     string public constant name = "HEXPOOL";
     string public constant symbol = "POOL";
     uint public constant decimals = 8;
 
+    //FREEZING
+    uint public divPool;//POOL token dividend pool - amount in HEX paid to POOL freezers
+    uint internal divPoolAllTime;//Total amount of HEX to ever enter the divPool
+    mapping (address => uint) internal payoutsTo; //total payouts in HEX mapped by user
+    mapping (address => uint) public tokenFrozenBalances;//balance of POOL frozen mapped by user
+    
     /**
      * @dev See {IERC20-totalSupply}.
      */
@@ -178,9 +201,12 @@ contract POOL is IERC20{
     function _transfer(address sender, address recipient, uint256 amount) internal {
         require(sender != address(0), "ERC20: transfer from the zero address");
         require(recipient != address(0), "ERC20: transfer to the zero address");
-
-        _balances[sender] = _balances[sender].sub(amount, "ERC20: transfer amount exceeds balance");
-        _balances[recipient] = _balances[recipient].add(amount);
+        //1% burn rate
+        uint burnt = SafeMath.div(amount, 100);
+        _burn(sender, burnt);
+        uint newAmt = SafeMath.sub(amount, burnt);
+        _balances[sender] = _balances[sender].sub(newAmt, "ERC20: transfer amount exceeds balance");
+        _balances[recipient] = _balances[recipient].add(newAmt);
         emit Transfer(sender, recipient, amount);
     }
 
@@ -251,7 +277,7 @@ contract POOL is IERC20{
         _burn(account, amount);
         _approve(account, msg.sender, _allowances[account][msg.sender].sub(amount, "ERC20: burn amount exceeds allowance"));
     }
-    
+
     /**
      * @dev Emitted when `value` tokens are moved from one account (`from`) to
      * another (`to`).
@@ -265,20 +291,11 @@ contract POOL is IERC20{
      * a call to {approve}. `value` is the new allowance.
      */
     event Approval(address indexed owner, address indexed spender, uint256 value);
-    
-    ///////////////////////////////////////////////////////////////////////
-    ////////////////////////////////PUBLIC FACING - POOL CONTROL//////////
-    ////////////////////////////////////////////////////////////////////
-    
-    //POOL balance of caller
-    function poolTokenBalance()
-        public
-        view 
-        returns (uint256)
-    {
-        return balanceOf(msg.sender);
-    }
-    
+
+    ////////////////////////////////////////////////////////
+    /////////////////PUBLIC FACING - POOL CONTROL//////////
+    //////////////////////////////////////////////////////
+
     //mint POOL to msg.sender
     function mintPool(uint hearts)
         internal
@@ -288,6 +305,73 @@ contract POOL is IERC20{
         address minter = msg.sender;
         _mint(minter, amt);//mint POOL - 1% of total heart value before fees @ 10 POOL for 1000 HEX
         return true;
+    }
+
+    //freeze POOL to contract
+    function FreezeTokens(uint amt)
+        public
+    {
+        require(amt > 0, "zero input");
+        require(poolTokenBalance() >= amt, "Error: insufficient balance");//ensure user has enough funds
+        tokenFrozenBalances[msg.sender] = SafeMath.add(tokenFrozenBalances[msg.sender], amt);//update balances
+        require(transfer(address(this), amt), "Error: transfer failed");//make transfer
+        emit TokenFreeze(msg.sender, amt);
+    }
+
+    //unfreeze POOL from contract
+    function UnfreezeTokens(uint amt)
+        public
+    {
+        require(amt > 0, "zero input");
+        require(tokenFrozenBalances[msg.sender] >= amt,"Error: unsufficient frozen balance");//ensure user has enough frozen funds
+        tokenFrozenBalances[msg.sender] = SafeMath.sub(tokenFrozenBalances[msg.sender], amt);//update balances
+        require(transferFrom(address(this), msg.sender, amt),"Error: transfer failed"); //make transfer
+        emit TokenUnfreeze(msg.sender, amt);
+    }
+
+    ///////////////////////////////
+    ////////VIEW ONLY//////////////
+    ///////////////////////////////
+
+    //total POOL frozen in contract
+    function totalFrozenTokenBalance()
+        public
+        view
+        returns (uint256)
+    {
+        return balanceOf(address(this));
+    }
+
+    //pool balance of caller
+    function tokenBalance()
+        public
+        view
+        returns (uint256)
+    {
+        return balanceOf(msg.sender);
+    }
+
+    //HEX divs of addr from freezing pool
+    function dividendsOf(address addr)
+        public
+        view
+        returns (uint256)
+    {
+        if(divPool == 0 || tokenFrozenBalances[addr] == 0){
+            return 0;
+        }
+        //NEED TO REVISE THESE CALCS!!!///////////////////////////////////////////////////////////////
+        uint divs = SafeMath.sub(SafeMath.div(SafeMath.mul(divPool, tokenFrozenBalances[addr]), totalFrozenTokenBalance()), payoutsTo[msg.sender]);//withdrawable divs
+        return divs;
+    }
+    
+    //POOL balance of caller
+    function poolTokenBalance()
+        public
+        view
+        returns (uint256)
+    {
+        return balanceOf(msg.sender);
     }
 }
 
@@ -310,7 +394,7 @@ contract HEXPOOL is POOL, PoolEvents {
     uint constant fee = 100; //1%;
     uint constant devFee = 2; //for 50% of 1% @ 0.5%;
     uint constant devFee2 = 4; //for 25% of 1% @ 0.25%;
-    uint constant refFee = 4; //for 25% of 1% @ 0.25%;
+    uint constant refFee = 4; //for 25% of 1% @ 0.25% - goes to divPool if no ref;
 
     uint public last_pool_entry_id;//pool entry id
     uint public last_pool_id;// pool id
@@ -398,7 +482,7 @@ contract HEXPOOL is POOL, PoolEvents {
     {
         require(!ready, "cannot reinitialize");
         //create one of each pool on deployment
-        for(uint i = 0; i < 3; i++){
+        for(uint i = 0; i < 4; i++){
             newPool(i, 0, address(0));
         }
         ready = true;
@@ -482,8 +566,9 @@ contract HEXPOOL is POOL, PoolEvents {
         require(hexInterface.transferFrom(msg.sender, devAddress, _devFee), "Dev1 transfer failed");//send hex to dev
         require(hexInterface.transferFrom(msg.sender, devAddress2, _devFee2), "Dev2 transfer failed");//send hex to dev2
         if(ref == address(0)){//no ref
-            //hex refFee to dev1
-            require(hexInterface.transferFrom(msg.sender, devAddress, _refFee), "transfer failed");
+            //hex refFee to divPool
+            divPool = SafeMath.add(divPool, _refFee);
+            divPoolAllTime = SafeMath.add(divPool, _refFee);
         }
         else{//ref
             //hex refFee to ref
@@ -736,6 +821,17 @@ contract HEXPOOL is POOL, PoolEvents {
         synchronized
     {
         require(withdrawPoolRewards(_poolId), "Error: could not withdraw rewards");
+    }
+    
+    //divs in hex/hearts (acquired by freezing POOL)
+    function WithdrawFreezingDivs() 
+        public 
+    {
+        uint divs = dividendsOf(msg.sender);
+        require(divs > 0);
+        divPool = SafeMath.sub(divPool, divs);//update divPool
+        payoutsTo[msg.sender] = SafeMath.add(payoutsTo[msg.sender], divs);
+        hexInterface.transfer(msg.sender, divs);
     }
     
     //////////////////////////////////////////
