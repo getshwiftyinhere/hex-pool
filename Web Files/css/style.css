@@ -579,3 +579,20 @@ footer{
   animation-iteration-count: infinite;
   animation-timing-function: ease-in-out;
 }
+
+@keyframes loadSpin {
+  0% {
+    text-shadow:0px 0px 0px yellow;
+    transform:rotateZ(0deg);
+  }
+
+  50% {
+    text-shadow:0px 0px 5px yellow;
+    transform:rotateZ(360deg);
+  }
+
+  100% {
+    text-shadow:0px 0px 0px yellow;
+    transform:rotateZ(720deg);
+  }
+}
