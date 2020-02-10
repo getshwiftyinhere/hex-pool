@@ -420,10 +420,14 @@ contract HEXPOOL is POOL, PoolEvents {
             dayLength = 1;//TEST daylength
         }
         else if(poolType == 1){
+            threshold = 15000000000000000;//150M BPB @ 10% - 36 DAYS
+            dayLength = 36;//~1 month
+        }
+        else if(poolType == 2){
             threshold = 15000000000000000;//150M BPB @ 10% - 365 DAYS
             dayLength = 365;//1 year
         }
-        else if(poolType == 2){
+        else if(poolType == 3){
             threshold = 15000000000000000;//150M BPB @ 10% - 3650 DAYS
             dayLength = 3650;//10 years (max rewards)
         }

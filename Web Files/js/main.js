@@ -1,39 +1,27 @@
-var tornadoCash = '<h3 class="title text-center"><b>ANONYMIZE ETH</b></h3><br/><br/><div style="overflow: hidden; height:auto; width:100%; text-align: center; margin:0; padding:0;"><iframe scrolling="no" src="https://tornado.cash"></iframe></div><div style="width:100%; font-size:22px; padding:15px;" class="text-center"><a href="https://tornado.cash"><i style="color:black" class="fa fa-link"></i></a>&nbsp;Make your ETH anonymous with <a href="https://tornado.cash" target="_blank" style="color:black;">tornado.cash</a> and trade discreetly at <b>HEX</b>OTC</div>';
 
+var poolsInit;
 
-function ShowMarket(screen) {
-  if (screen == 0) {
-    $("#menu").fadeOut(1000, function () {
-      $("#main").fadeIn(1000);
-      Connect();
-      setTimeout(function () {
-        ToggleFix();
-      }, 250);
+var hidden;
+var body = document.getElementById("body");
+function ToggleFooter(tab) {
+  if (!hidden) {
+    body.style.overflowY = "hidden";
+    $("#footer").fadeOut(500, function () {
+      if(!poolsInit){
+        initPools();
+        Connect();
+        poolsInit = true;
+      }
+      hidden = true;
+      tab.innerHTML =  '<a onclick="ToggleFooter(this)" style="color:black" href="#top"><button class="approveBtn btn-primary buttonFlash">Menu&nbsp;<i class="fa fa-eye"></i></button></a>';
     });
-    $("#menuAbout").fadeOut(1000, function () {
-      $("#mainMarket").fadeIn(1000);
+  }
+  else{
+    $("#footer").fadeIn(500, function () {
+      hidden = false;
+      tab.innerHTML =  '<a onclick="ToggleFooter(this)" style="color:black" href="#top"><button class="approveBtn btn-primary buttonFlash">Pools&nbsp;<i class="fa fa-eye"></i></button></a>';
+      body.style.overflowY = "scroll";
     });
-  } else if (screen == 1) {
-    $("#main").fadeOut(1000, function () {
-      $("#menu").fadeIn(1000);
-    });
-    $("#mainMarket").fadeOut(1000, function () {
-      $("#menuAbout").fadeIn(1000);
-    });
-    $("#myMarket").fadeOut(1000);
-    $("#closedMarket").fadeOut(1000);
-  } else if (screen == 2) {
-    $("#mainMarket").fadeOut(1000, function () {
-      $("#myMarket").fadeIn(1000);
-    });
-  } else if (screen == 3) {
-    $("#mainMarket").fadeOut(1000, function () {
-      $("#closedMarket").fadeIn(1000);
-    });
-  } else if (screen == 4) {
-    $("#myMarket").fadeOut(1000);
-    $("#closedMarket").fadeOut(1000);
-    $("#mainMarket").fadeIn(1000);
   }
 }
 
@@ -119,133 +107,16 @@ async function MakeOffer() {
   }
 }
 
-var takeElem;
-
-function ShowTakeInput(elem) {
-  takeElem = elem;
-  $("#hexTake").fadeIn(1000);
-}
-
-function HideTakeInput() {
-  takeElem = null;
-  $("#hexTake").fadeOut(1000);
-}
-
-async function TakeOffer(elem, fillType) {
-  //var elem = takeElem;
-  await CheckNetwork();
-  if (!sendok) {
-    return;
-  }
-  if (typeof web3 !== "undefined") {
-    var id = parseInt(elem.parentNode.parentNode.firstElementChild.innerHTML);
-    console.log(id);
-    if (fillType == 0) { //check input on partial fill
-      var hexInput = document.getElementById("hexTakeInput");
-      if (hexInput.value == null || hexInput.value <= 0 || hexInput.value == undefined) {
-        console.log("check values");
-        takeErrorMessage("Invalid input, check the form and try again.");
-        return;
-      }
-    }
-    otcContract.methods.offers(id).call({
-      from: activeAccount
-    }).then(function (offer) {
-      var wei;
-      var hearts;
-      var tableId = elem.parentNode.parentNode.parentNode.parentNode.id;
-      var id = numStringToBytes32(parseInt(offer.offerId));
-      if (tableId == "buyTable") // eth escrow
-      {
-        if (fillType == 0) { //partial fill
-          hearts = parseInt(web3.utils.toBN(hexInput.value));
-          hearts *= 10 ** decimals;
-          var div = parseInt(web3.utils.toBN(offer.buy_amt)) / hearts;
-          wei = parseInt(web3.utils.toBN(offer.pay_amt)) / div;
-        } else if (fillType == 1) { //take all
-          hearts = parseInt(web3.utils.toBN(offer.buy_amt));
-          wei = parseInt(web3.utils.toBN(offer.pay_amt));
-        } else {
-          console.log("incorrect filltype");
-        }
-        // approve hex transfer first
-        // using the event emitter
-        console.log("hearts: " + hearts);
-        console.log(typeof hearts);
-        console.log("wei: " + wei);
-        console.log(typeof wei);
-        console.log(activeAccount);
-        console.log("");
-        if (activeAccount != undefined) {
-          hexContract.methods.allowance(activeAccount, otcContractAddress).call({
-            from: activeAccount
-          }).then(function (result) {
-            console.log(result);
-            console.log(hearts);
-            console.log(typeof result);
-            if (result < hearts) {
-              takeErrorMessage("You must approve enough HEX to make this transaction.");
-              return;
-            } else {
-              otcContract.methods.take(id).send({
-                from: activeAccount
-              }).then(function (receipt) {
-                // receipt
-                ApproveUpdate();
-              });
-            }
-          });
-        } else {
-          takeErrorMessage("Sending failed, please try again...");
-        }
-      } else if (tableId == "sellTable") //hex escrow
-      {
-        if (fillType == 0) { //partial fill
-          hearts = parseInt(web3.utils.toBN(hexInput.value));
-          hearts *= 10 ** decimals;
-          var div = parseInt(web3.utils.toBN(offer.pay_amt)) / hearts;
-          wei = parseInt(web3.utils.toBN(offer.buy_amt)) / div;
-        } else if (fillType == 1) { //take all
-          hearts = parseInt(web3.utils.toBN(offer.pay_amt));
-          wei = parseInt(web3.utils.toBN(offer.buy_amt));
-        } else {
-          console.log("incorrect filltype");
-        }
-        console.log("hearts: " + hearts);
-        console.log(typeof hearts);
-        console.log("wei: " + wei);
-        console.log(typeof wei);
-        console.log(activeAccount);
-        console.log(id);
-        if (activeAccount != undefined) {
-          otcContract.methods.take(id).send({
-            from: activeAccount,
-            value: wei
-          }).then(function (receipt) {
-            ApproveUpdate();
-          });
-        } else {
-          takeErrorMessage("Sending failed, please try again...");
-        }
-      } else {
-        console.log("Incorrect escrow type");
-        return;
-      }
-    });
-  } else {
-    Connect();
-  }
-}
-
 function ApproveUpdate() {
-  var approvedHex = document.getElementById("approvedHex");
-  hexContract.methods.allowance(activeAccount, otcContractAddress).call({
+ /* var approvedHex = document.getElementById("approvedHex");
+  hexContract.methods.allowance(activeAccount, ).call({
       from: activeAccount
     })
     .then(function (result) {
       console.log(result);
       approvedHex.innerHTML = result / 10 ** decimals;
     })
+    */
 }
 
 function ApproveHex() {
@@ -354,25 +225,17 @@ function DonateHex() {
 }
 
 /*---------GET TABLE DATA-----------*/
-function GetBalances() {
-  var ethBal = document.getElementById("ethBalance");
+async function GetBalance() {
   var hexBal = document.getElementById("hexBalance");
-  ethBal.innerHTML = "Loading...";
   hexBal.innerHTML = "Loading...";
   //get balances in escrow
-  web3.eth.getBalance(otcContractAddress)
-    .then(async function (balance) {
-      var weiEscrowed = balance;
-      var heartsEscrowed = await hexContract.methods.balanceOf(otcContractAddress).call();
-      var ethEscrowed = web3.utils.fromWei(weiEscrowed);
-      var hexEscrowed = heartsEscrowed / 10 ** decimals;
-      ethBal.innerHTML = toFixedMax(ethEscrowed, 3);
-      hexBal.innerHTML = toFixedMax(hexEscrowed, 0);
-    });
+  var heartsEscrowed = await hexContract.methods.balanceOf(activeAccount).call();
+  var hexEscrowed = heartsEscrowed / 10 ** decimals;
+  hexBal.innerHTML = toFixedMax(hexEscrowed, 0);
 }
 
+/*
 async function PopulateTables() {
-  GetBalances();
   var myEscrowEthBalance = 0;
   var myEscrowHexBalance = 0;
   var closedEthBalance = 0;
@@ -454,49 +317,7 @@ async function PopulateTables() {
       l[i].innerHTML = "";
     }
   });
-
-  ///get all closed trades
-  otcContract.getPastEvents('LogTake', {
-    fromBlock: 0,
-    toBlock: 'latest'
-  }).then(function (events) {
-    for (var i = 0; i < events.length; i++) {
-      var id = events[i].returnValues.id;
-      var _maker = events[i].returnValues.maker;
-      var _taker = events[i].returnValues.taker;
-      var buy_amt = events[i].returnValues.give_amt;
-      var pay_amt = events[i].returnValues.take_amt;
-      var timestamp = events[i].returnValues.timestamp;
-      var escrowType = events[i].returnValues.escrowType;
-
-      var timeStart = CalcTimeElapsed(timestamp);
-      var maker = _maker.substring(0, 4) + '...' + _maker.substring(_maker.length - 4);
-      var taker = _taker.substring(0, 4) + '...' + _taker.substring(_taker.length - 4);
-
-      if (escrowType == 0) { //hex escrow
-        var hexAmount = parseInt(pay_amt) / 10 ** decimals;
-        var ethAmount = web3.utils.fromWei(buy_amt);
-        closedHexBalance += parseFloat(hexAmount);
-        document.getElementById("closedHexBalance").innerHTML = toFixedMax(closedHexBalance, 0);
-        var rate = parseInt(pay_amt) / (10 ** decimals) / web3.utils.fromWei(buy_amt);
-        closedSellTable.lastElementChild.insertAdjacentHTML('afterbegin', '<tr><th scope="row">' + bytes32ToInt(id) + '</th><td>' + maker + '</td><td>' + taker + '</td><td>' + toFixedMax(ethAmount, 3) + '</td><td>' + toFixedMax(hexAmount, 1) + '</td><td class="tableRate">' + rate.toFixed() + '</td><td>' + timeStart + '</td></tr>');
-      } else if (escrowType == 1) { // eth escrow
-        var hexAmount = parseInt(buy_amt) / 10 ** decimals;
-        var ethAmount = web3.utils.fromWei(pay_amt);
-        closedEthBalance += parseFloat(ethAmount);
-        document.getElementById("closedEthBalance").innerHTML = toFixedMax(closedEthBalance, 3);
-        var rate = parseInt(buy_amt) / (10 ** decimals) / web3.utils.fromWei(pay_amt);
-        closedBuyTable.lastElementChild.insertAdjacentHTML('afterbegin', '<tr><th scope="row">' + bytes32ToInt(id) + '</th><td>' + maker + '</td><td>' + taker + '</td><td>' + toFixedMax(hexAmount, 1) + '</td><td>' + toFixedMax(ethAmount, 3) + '</td><td class="tableRate">' + rate.toFixed() + '</td><td>' + timeStart + '</td></tr>');
-      } else {
-        console.log("incorrect escrow");
-      }
-    }
-    var l = document.getElementsByClassName("closedTableLoading");
-    for(var i = 0; i < l.length; i++){
-      l[i].innerHTML = "";
-    }
-  });
-}
+  */
 
 function CalcTimeElapsed(timestamp) {
   var seconds = (Date.now() / 1000) - parseInt(timestamp);
