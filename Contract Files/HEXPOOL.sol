@@ -52,13 +52,13 @@ contract TokenEvents {
 //when a user freezes tokens
     event TokenFreeze(
         address indexed user,
-        uint indexed poolValue
+        uint indexed value
     );
     
 //when a user unfreezes tokens
     event TokenUnfreeze(
         address indexed user,
-        uint indexed poolValue
+        uint indexed value
     );
 }
 

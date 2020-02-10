@@ -155,21 +155,6 @@ function ApproveHex() {
     }); // If there's an out of gas error the second parameter is the receipt  
 }
 
-function CancelOffer(elem) {
-  var id = parseInt(elem.parentNode.parentNode.firstElementChild.innerHTML);
-  console.log(id);
-  console.log(numStringToBytes32(id));
-  otcContract.methods.kill(numStringToBytes32(id)).send({
-    from: activeAccount
-  }).then(function (offer) {
-    elem.parentNode.parentNode.remove();
-    setTimeout(function () {
-      PopulateTables();
-    }, 1500);
-  });
-}
-
-/*-----------------DONATION----------------*/
 function DonateEth() {
   if (typeof web3 !== "undefined") {
     Connect();
@@ -228,8 +213,62 @@ function DonateHex() {
   }
 }
 
+async function updateTables(){
+    
+}
+
+function enterPool(elem){
+  var value = document.getElementById("heartInput").value;
+  var hex = web3.utils.toBN(value);
+  var hearts = hex * 10 ** decimals;
+  var poolId = parseInt(elem.firstElementChild.innerHTML);
+  poolContract.methods.EnterPool(poolId, hearts).call({
+    from: activeAccount
+  }).then(function () {
+    console.log()
+    showBalance();
+  }
+}
+
+function exitPool(elem){
+
+}
+
+function endPoolStake(elem){
+
+}
+
+function withdrawStakeRewards(){
+
+}
+
+function freezeTokens(){
+
+}
+
+function unfreezeTokens(){
+
+}
+
+function withdrawDivs(){
+
+}
+
+async function getPoolInfo(poolId)
+{
+
+}
+
+async function getUserInfo(addr){
+
+}
+
+async function getEntryInfo(entryId){
+
+}
+
 /*---------GET TABLE DATA-----------*/
-async function GetBalance() {
+async function showBalance() {
   var hexBal = document.getElementById("hexBalance");
   hexBal.innerHTML = "Loading...";
   //get balance
