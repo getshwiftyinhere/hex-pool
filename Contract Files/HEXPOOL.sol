@@ -49,13 +49,13 @@ contract PoolEvents {
 
 contract TokenEvents {
 
-//when a user enters a pool
+//when a user freezes tokens
     event TokenFreeze(
         address indexed user,
         uint indexed poolValue
     );
     
-//when a user exits a pool
+//when a user unfreezes tokens
     event TokenUnfreeze(
         address indexed user,
         uint indexed poolValue
