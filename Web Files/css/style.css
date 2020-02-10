@@ -4,8 +4,7 @@
 }
 
 body {
-  margin:0;
-  overflow-x:hidden!important;
+  color: white;
   background-color: #888;
   -webkit-font-smoothing: antialiased;
 }
@@ -18,14 +17,13 @@ body {
 
 .navTitle {
   font-size: 2em;
-  color:white;
+  color: white;
   font-weight: 600;
 }
 
 .navbar {
-  background: linear-gradient(to top right, #868686, #000000);
+  background: linear-gradient(to top right, #444444, #1723b1);
   padding: 0 !important;
-  max-height:70px;
 }
 
 .navbar-brand img {
@@ -72,6 +70,9 @@ body {
 
 /* --------- Banner ---------- */
 .banner {
+  background: linear-gradient(to top right, #fbff00, #ff00ea);
+  color: #fff;
+  padding-top: 2.5%;
 }
 
 .promo-title {
@@ -136,17 +137,16 @@ body {
   width: 100%;
 }
 
-.hexHr::after {
+.title::after {
   content: '';
   background: linear-gradient(to top right, #fbff00, #ff00ea);
-  height: 5px;
+  height: 8px;
   width: 50px;
   margin-left: auto;
   margin-right: auto;
   display: block;
   border-radius: 70px;
-  transform: translateY(15px);
-  margin-bottom: 50px;
+  transform: translateY(23px);
 }
 
 #services .btn-primary:hover {
@@ -188,14 +188,8 @@ body {
 
 /* ----- Footer ------*/
 #footer {
-  padding-top:200px;
-  min-height:100%;
-  width:100%;
-  position: absolute;
-  top:0px;
-  left:0px;
-  color: white;
-  background: linear-gradient(to top right, #868686, #000000);
+  background: linear-gradient(to top right, #444444, #1723b1);
+  color: #fff;
 }
 
 .footer-img {
@@ -278,18 +272,18 @@ body {
 
 a:hover {
   text-decoration: none;
+  color: white;
   text-shadow: 0px 0px 2px #fbff00;
-  cursor:pointer;
 }
 
 /*--------------------------*/
 
-.hexBtn {
+.takeBtn {
   box-shadow: none !important;
   width:auto;
   min-width: 8rem;
   min-height: 50px;
-  border: 5px white solid;
+  border: 5px black solid;
   border-radius: 50px;
   background: linear-gradient(to top right, #fbff00, #ff00ea);
   color: white;
@@ -299,11 +293,9 @@ a:hover {
   padding-right:10px;
 }
 
-.hexBtn:hover {
+.takeBtn:hover {
   transform: scale(1.2);
   color: #fff;
-  border: 3px white solid;
-  transition: all linear 0.3s;
 }
 
 
@@ -324,9 +316,7 @@ a:hover {
 
 .approveBtn:hover {
   transform: scale(1.2);
-  border: 5px white solid;
   color: #fff;
-  transition: all linear 0.3s;
 }
 
 .addressBreak {
@@ -335,7 +325,55 @@ a:hover {
   font-weight: bold;
 }
 
+.container {
+  perspective: 800px;
+}
+
+#menu {}
+
+#main {
+  display: none;
+}
+
+#aboutMenu {}
+
+#mainMarket {
+  display: none;
+  text-align: center;
+  padding-bottom: 50px;
+}
+
+#myMarket {
+  display: none;
+  text-align: center;
+  padding-bottom: 50px;
+}
+
+#closedMarket {
+  display: none;
+  text-align: center;
+  padding-bottom: 50px;
+}
+
 #errorMsg {
+  display: none;
+  color: red;
+  background-color: white;
+  border-radius: 2px;
+  margin-bottom: 5px;
+  padding: 5px 10px 5px 10px;
+}
+
+#successMsg {
+  display: none;
+  color: green;
+  background-color: white;
+  border-radius: 2px;
+  margin-bottom: 5px;
+  padding: 5px 10px 5px 10px;
+}
+
+#takeErrorMsg {
   display: none;
   color: red;
   position: fixed;
@@ -347,11 +385,9 @@ a:hover {
   margin-bottom: 5px;
   padding: 5px 10px 5px 10px;
   z-index:99;
-  font-weight: 700;
-  box-shadow: 0px 0px 5px black;
 }
 
-#successMsg {
+#takeSuccessMsg {
   display: none;
   color: green;
   position: fixed;
@@ -363,8 +399,6 @@ a:hover {
   margin-bottom: 5px;
   padding: 5px 10px 5px 10px;
   z-index:99;
-  font-weight: 700;
-  box-shadow: 0px 0px 5px black;
 }
 
 #rate {
@@ -456,8 +490,41 @@ td i:hover {
   text-shadow: 0px 0px 2px #fbff00;
   transition: all 0.3s;
 }
+
+iframe{
+  border: 0px none; 
+  margin-left: 0px; 
+  height: 700px; 
+  margin-top: -100px; 
+  width: 100%;
+}
+
+@media(max-width:785px){
+  iframe{
+    height: 1150px;
+  }
+}
+
+#tornadoCash{
+  background: white;
+  color:black;
+  padding-bottom:2rem;
+}
+
+@keyframes playPulse {
+  0% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.2);
+  }
+
+  100% {
+    transform: scale(1);
+  }
+}
 .hexLink {
-  color:white;
   animation-name:pulse;
   animation-duration: 2s;
   animation-iteration-count: infinite;
@@ -475,22 +542,8 @@ td i:hover {
 
   100% {
     text-shadow:0px 0px 0px yellow;
-  }
-}
-
-@keyframes tabPulse {
-  0% {
-    text-shadow:0px 0px 0px yellow;
-    box-shadow:0px 0px 0px magenta;
-  }
-
-  50% {
-    text-shadow:0px 0px 5px yellow;
-    box-shadow:0px 0px 5px magenta;
-  }
-
-  100% {
-    text-shadow:0px 0px 0px yellow;
+<<<<<<< Updated upstream
+=======
     box-shadow:0px 0px 0px magenta;
   }
 }
@@ -539,12 +592,40 @@ footer{
 }
 
 #overlay{
-  /*background-color: rgba(0,0,0,0.3);*/
+  background: linear-gradient(to top right, #868686, #000000);
   width:100%;
-  height:100%;
+  min-height:100%;
   position: absolute;
   top:0px;
   left:0px;
+}
+
+.loading{
+  color:white;
+  position: absolute;
+  top:48%;
+  left:48%;
+  animation-name:loadSpin;
+  animation-duration: 2s;
+  animation-iteration-count: infinite;
+  animation-timing-function: ease-in-out;
+}
+
+@keyframes loadSpin {
+  0% {
+    text-shadow:0px 0px 0px yellow;
+    transform: rotateZ(0deg);
+  }
+
+  50% {
+    text-shadow:0px 0px 5px yellow;
+    transform: rotateZ(359deg);
+  }
+
+  100% {
+    text-shadow:0px 0px 0px yellow;
+    transform: rotateZ(720deg);
+  }
 }
 
 .poolImg{
@@ -557,5 +638,6 @@ footer{
 @media(max-width:568px){
   .poolImg{ 
     top:70px; 
+>>>>>>> Stashed changes
   }
 }

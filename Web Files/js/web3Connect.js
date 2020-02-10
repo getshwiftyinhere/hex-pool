@@ -2,7 +2,406 @@
 
 const infura = "http://mainnet.infura.io/v3/760d4772b1f843eea9f1a82e3ce66d40";
 
-const donationAddress = "0xB1A7Fe276cA916d8e7349Fa78ef805F64705331E";
+const donationAddress = "0xFeDc84d0cd5FE6dB2B2f8aC31c7e31e49B665e5c";
+
+var otcContract;
+const otcContractAddress = "0x204B937FEaEc333E9e6d72D35f1D131f187ECeA1";
+const otcAbi =[
+	{
+		"constant": false,
+		"inputs": [
+			{
+				"name": "id",
+				"type": "uint256"
+			}
+		],
+		"name": "buyETH",
+		"outputs": [
+			{
+				"name": "",
+				"type": "bool"
+			}
+		],
+		"payable": false,
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"constant": false,
+		"inputs": [
+			{
+				"name": "id",
+				"type": "uint256"
+			}
+		],
+		"name": "buyHEX",
+		"outputs": [
+			{
+				"name": "",
+				"type": "bool"
+			}
+		],
+		"payable": true,
+		"stateMutability": "payable",
+		"type": "function"
+	},
+	{
+		"constant": false,
+		"inputs": [
+			{
+				"name": "id",
+				"type": "uint256"
+			}
+		],
+		"name": "cancel",
+		"outputs": [
+			{
+				"name": "success",
+				"type": "bool"
+			}
+		],
+		"payable": false,
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"constant": false,
+		"inputs": [
+			{
+				"name": "id",
+				"type": "bytes32"
+			}
+		],
+		"name": "kill",
+		"outputs": [],
+		"payable": false,
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"constant": false,
+		"inputs": [
+			{
+				"name": "pay_amt",
+				"type": "uint256"
+			},
+			{
+				"name": "buy_amt",
+				"type": "uint256"
+			}
+		],
+		"name": "make",
+		"outputs": [
+			{
+				"name": "id",
+				"type": "bytes32"
+			}
+		],
+		"payable": true,
+		"stateMutability": "payable",
+		"type": "function"
+	},
+	{
+		"constant": false,
+		"inputs": [
+			{
+				"name": "pay_amt",
+				"type": "uint256"
+			},
+			{
+				"name": "buy_amt",
+				"type": "uint256"
+			}
+		],
+		"name": "offerETH",
+		"outputs": [
+			{
+				"name": "id",
+				"type": "uint256"
+			}
+		],
+		"payable": true,
+		"stateMutability": "payable",
+		"type": "function"
+	},
+	{
+		"constant": false,
+		"inputs": [
+			{
+				"name": "pay_amt",
+				"type": "uint256"
+			},
+			{
+				"name": "buy_amt",
+				"type": "uint256"
+			}
+		],
+		"name": "offerHEX",
+		"outputs": [
+			{
+				"name": "id",
+				"type": "uint256"
+			}
+		],
+		"payable": false,
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"constant": false,
+		"inputs": [
+			{
+				"name": "id",
+				"type": "bytes32"
+			}
+		],
+		"name": "take",
+		"outputs": [],
+		"payable": true,
+		"stateMutability": "payable",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"payable": false,
+		"stateMutability": "nonpayable",
+		"type": "constructor"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"name": "id",
+				"type": "bytes32"
+			},
+			{
+				"indexed": true,
+				"name": "maker",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"name": "pay_amt",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"name": "buy_amt",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"name": "timestamp",
+				"type": "uint64"
+			},
+			{
+				"indexed": false,
+				"name": "escrowType",
+				"type": "uint256"
+			}
+		],
+		"name": "LogMake",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": false,
+				"name": "id",
+				"type": "bytes32"
+			},
+			{
+				"indexed": true,
+				"name": "maker",
+				"type": "address"
+			},
+			{
+				"indexed": true,
+				"name": "taker",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"name": "take_amt",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"name": "give_amt",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"name": "timestamp",
+				"type": "uint64"
+			},
+			{
+				"indexed": false,
+				"name": "escrowType",
+				"type": "uint256"
+			}
+		],
+		"name": "LogTake",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"name": "id",
+				"type": "bytes32"
+			},
+			{
+				"indexed": true,
+				"name": "maker",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"name": "pay_amt",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"name": "buy_amt",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"name": "timestamp",
+				"type": "uint64"
+			},
+			{
+				"indexed": false,
+				"name": "escrowType",
+				"type": "uint256"
+			}
+		],
+		"name": "LogKill",
+		"type": "event"
+	},
+	{
+		"constant": true,
+		"inputs": [
+			{
+				"name": "id",
+				"type": "uint256"
+			}
+		],
+		"name": "getOffer",
+		"outputs": [
+			{
+				"name": "",
+				"type": "uint256"
+			},
+			{
+				"name": "",
+				"type": "uint256"
+			},
+			{
+				"name": "",
+				"type": "bytes32"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [
+			{
+				"name": "id",
+				"type": "uint256"
+			}
+		],
+		"name": "getOwner",
+		"outputs": [
+			{
+				"name": "owner",
+				"type": "address"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [
+			{
+				"name": "id",
+				"type": "uint256"
+			}
+		],
+		"name": "isActive",
+		"outputs": [
+			{
+				"name": "active",
+				"type": "bool"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [],
+		"name": "last_offer_id",
+		"outputs": [
+			{
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [
+			{
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"name": "offers",
+		"outputs": [
+			{
+				"name": "pay_amt",
+				"type": "uint256"
+			},
+			{
+				"name": "buy_amt",
+				"type": "uint256"
+			},
+			{
+				"name": "owner",
+				"type": "address"
+			},
+			{
+				"name": "timestamp",
+				"type": "uint64"
+			},
+			{
+				"name": "offerId",
+				"type": "bytes32"
+			},
+			{
+				"name": "escrowType",
+				"type": "uint256"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	}
+];
 
 const decimals = 8;
 var hexContract;
@@ -1102,7 +1501,9 @@ async function Connect() {
 	if (window.ethereum) {
 		web3 = new Web3(ethereum);
 	}
+	otcContract = new web3.eth.Contract(otcAbi, otcContractAddress);
 	hexContract = new web3.eth.Contract(hexAbi, hexContractAddress);
+	PopulateTables();
 	if (window.ethereum == undefined) {
 		errorMessage("No wallet found, please try with a compatible dapp browser.");
 		console.log("Defaulting to infura for view only");
@@ -1122,17 +1523,19 @@ async function Connect() {
 						web3Found = true;
 						console.log("Web3 Found!");
 						console.log(web3.version);
-						document.getElementById("connectBtn").remove();
 					}
 				});
 				// Acccounts now exposed
 			} catch (error) {
 				// User denied account access...
+				if (!web3Found) {
+					web3Found = true;
 					web3 = new Web3(new Web3.providers.HttpProvider(infura));
 					console.error;
 					console.log("Defaulting to infura for view only");
-					errorMessage("Failed to connect to your wallet, allow access to use <b>HEX</b>POOL");
+					errorMessage("Failed to connect to your wallet, allow access to use <b>HEX</b>OTC");
 					return;
+				}
 			}
 		}
 		// Legacy dapp browsers...
@@ -1146,7 +1549,6 @@ async function Connect() {
 				CheckAccount();
 				CheckNetwork();
 				ShowUserAddress();
-				document.getElementById("connectBtn").remove();
 			}
 		}
 		// Non-dapp browsers...
@@ -1176,13 +1578,13 @@ function CheckAccount() {
 		} else if (accounts.length == 0) //is user logged in?
 		{
 			setTimeout(function () {
-				errorMessage("Login to your wallet and allow permissions to interact with <b>HEX</b>POOL");
+				errorMessage("Login to your wallet and allow permissions to interact with <b>HEX</b>OTC");
 			}, 5000);
 		} else {
 			account = accounts[0];
 			activeAccount = account;
 			web3.eth.defaultAccount = account;
-			//ApproveUpdate();
+			ApproveUpdate();
 			clearInterval(accountInterval);
 			//interval for account change
 			accountInterval = setInterval(function () {
@@ -1251,12 +1653,30 @@ function successMessage(text) {
 	}, 3000);
 }
 
+function takeErrorMessage(text) {
+	console.log(text);
+	document.getElementById("takeErrorMsg").innerHTML = '<i class="fa fa-exclamation-circle"></i>&nbsp;' + text;
+	document.getElementById("takeErrorMsg").style.display = "block";
+	setTimeout(function () {
+		$("#takeErrorMsg").fadeOut(1000);
+	}, 3000);
+}
+
+function takeSuccessMessage(text) {
+	console.log(text);
+	document.getElementById("takeSuccessMsg").innerHTML = '<i class="fa fa-exclamation-circle"></i>&nbsp;' + text;
+	document.getElementById("takeSuccessMsg").style.display = "block";
+	setTimeout(function () {
+		$("#takeSuccessMsg").fadeOut(1000);
+	}, 3000);
+}
+
 function ShowUserAddress() {
-	//var elem = document.getElementById("userAddress");
+	var elem = document.getElementById("userAddress");
 	if (web3 != "undefined") {
 		web3.eth.getAccounts(function (err, accounts) {
 			if (accounts.length != 0) {
-				//elem.textContent = accounts[0];
+				elem.textContent = accounts[0];
 				console.log('Detected Account - ' + accounts[0].toString());
 			}
 		});
