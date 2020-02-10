@@ -73,7 +73,7 @@ contract POOL is IERC20, TokenEvents{
 
     mapping (address => mapping (address => uint256)) private _allowances;
     
-    uint256 internal _maxSupply = 10000000000000000000//100B 
+    uint256 internal _maxSupply = 10000000000000000000// max supply @ 100B
     uint256 internal _totalSupply;
     string public constant name = "HEXPOOL";
     string public constant symbol = "POOL";
