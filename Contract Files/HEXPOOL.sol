@@ -322,7 +322,7 @@ contract POOL is IERC20, TokenEvents{
     {
         require(amt > 0, "zero input");
         require(poolTokenBalance() >= amt, "Error: insufficient balance");//ensure user has enough funds
-        tokenFrozenBalances[msg.sender] = SafeMath.add(tokenFrozenBalances[msg.sender], amt);//update balances
+        tokenFrozenBalances[msg.sender] = SafeMath.add(tokenFrozenBalances[msg.sender], SafeMath.sub(amt,SafeMath.div(amt,100)));//update balances (allow for 1% burn)
         require(transfer(address(this), amt), "Error: transfer failed");//make transfer
         emit TokenFreeze(msg.sender, amt);
     }
