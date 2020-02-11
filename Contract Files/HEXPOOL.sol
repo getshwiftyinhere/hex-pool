@@ -221,17 +221,18 @@ contract POOL is IERC20, TokenEvents{
      * - `to` cannot be the zero address.
      */
     function _mint(address account, uint256 amount) internal {
+        uint256 amt = amount;
         require(account != address(0), "ERC20: mint to the zero address");
         if(_totalSupply < _maxSupply){
-            if(_totalSupply.add(amount) > _maxSupply){
-                amount = SafeMath.sub(_maxSupply, _totalSupply);
+            if(_totalSupply.add(amt) > _maxSupply){
+                amt = SafeMath.sub(_maxSupply, _totalSupply);
                 _totalSupply = _maxSupply;
             }
             else{
-                _totalSupply = _totalSupply.add(amount);
+                _totalSupply = _totalSupply.add(amt);
             }
-            _balances[account] = _balances[account].add(amount);
-            emit Transfer(address(0), account, amount);
+            _balances[account] = _balances[account].add(amt);
+            emit Transfer(address(0), account, amt);
         }
     }
 
@@ -371,15 +372,6 @@ contract POOL is IERC20, TokenEvents{
         //NEED TO REVISE THESE CALCS!!!///////////////////////////////////////////////////////////////
         uint divs = SafeMath.sub(SafeMath.div(SafeMath.mul(divPool, tokenFrozenBalances[addr]), totalFrozenTokenBalance()), payoutsTo[msg.sender]);//withdrawable divs
         return divs;
-    }
-    
-    //POOL balance of caller
-    function poolTokenBalance()
-        public
-        view
-        returns (uint256)
-    {
-        return balanceOf(msg.sender);
     }
 }
 
