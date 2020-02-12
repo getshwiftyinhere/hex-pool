@@ -621,8 +621,8 @@ contract HEXPOOL is POOL, PoolEvents {
         pool.hexStakeId = stake.stakeId;
         pool.stakeId = last_stake_id;
         pool.poolStakeStartTimestamp = now;
-        pool.isStaking = true;
         pool.isActive = false;
+        pool.isStaking = true;
         _next_stake_id();
         emit PoolStartStake(
             newStakedHearts,
@@ -647,6 +647,7 @@ contract HEXPOOL is POOL, PoolEvents {
         //find the stake index then
         //end stake
         hexInterface.stakeEnd(getStakeIndexById(address(this), pool.hexStakeId), pool.hexStakeId);
+        pool.isStaking = false;
         pool.stakeEnded = true;
         //calc stakeValue and stakeProfit
         uint256 stakeValue = SafeMath.sub(getContractBalance(), oldBalance);
