@@ -27,6 +27,7 @@ var PI2 = Math.PI * 2;
 
 var timeOfLastTouch = 0;
 
+var loopTick;
 function initPools() {
 
 	canvas = document.getElementById( 'pools' );
@@ -34,11 +35,7 @@ function initPools() {
 	document.onmousedown = onDocumentMouseDown;
 	document.onmouseup = onDocumentMouseUp;
 	document.onmousemove = onDocumentMouseMove;
-	document.ondblclick = onDocumentDoubleClick;
-
-	document.addEventListener( 'touchstart', onDocumentTouchStart, false );
-	document.addEventListener( 'touchmove', onDocumentTouchMove, false );
-	document.addEventListener( 'touchend', onDocumentTouchEnd, false );
+	//document.ondblclick = onDocumentDoubleClick;
 
 	// init box2d
 
@@ -49,18 +46,37 @@ function initPools() {
 	world = new b2World( worldAABB, new b2Vec2( 0, 0 ), true );
 
 	setWalls();
-	reset();
+	resetPools();
 	play();
 }
 
 
 function play() {
-
-	setInterval( loop, 1000 / 40 );
+	clearInterval(loopTick);
+	loopTick = setInterval( loop, 1000 / 40 );
 }
 
-function reset() {
+function resetPools() {
 
+	var i;
+	// color theme
+	theme = themes[ Math.random() * themes.length >> 0 ];
+	//document.body.style[ 'backgroundColor' ] = theme[ 0 ];
+	bodies = [];
+	elements = [];
+    poolCount = 3;
+
+    for( i = 0; i < poolCount; i++ ) {
+		createPool();
+    }
+    
+	for( i = 0; i < 25-poolCount; i++ ) {
+		createHexLogo();
+	}
+
+}
+
+function destroyPools(){
 	var i;
 
 	if ( bodies ) {
@@ -72,23 +88,6 @@ function reset() {
 			world.DestroyBody( body );
 			body = null;
 		}
-	}
-
-	// color theme
-	theme = themes[ Math.random() * themes.length >> 0 ];
-	//document.body.style[ 'backgroundColor' ] = theme[ 0 ];
-
-	bodies = [];
-	elements = [];
-
-    poolCount = 2;
-
-    for( i = 0; i < poolCount; i++ ) {
-		createPool();
-    }
-    
-	for( i = 0; i < 25-poolCount; i++ ) {
-		createHexLogo();
 	}
 
 }
@@ -111,59 +110,6 @@ function onDocumentMouseMove( event ) {
 
 	mouse.x = event.clientX;
 	mouse.y = event.clientY;
-}
-
-function onDocumentDoubleClick() {
-
-	reset();
-}
-
-function onDocumentTouchStart( event ) {
-
-	if( event.touches.length == 1 ) {
-
-		event.preventDefault();
-
-		// Faking double click for touch devices
-
-		var now = new Date().getTime();
-
-		if ( now - timeOfLastTouch  < 250 ) {
-
-			reset();
-			return;
-		}
-
-		timeOfLastTouch = now;
-
-		mouse.x = event.touches[ 0 ].pageX;
-		mouse.y = event.touches[ 0 ].pageY;
-		isMouseDown = true;
-	}
-}
-
-function onDocumentTouchMove( event ) {
-
-	if ( event.touches.length == 1 ) {
-
-		event.preventDefault();
-
-		mouse.x = event.touches[ 0 ].pageX;
-		mouse.y = event.touches[ 0 ].pageY;
-
-	}
-
-}
-
-function onDocumentTouchEnd( event ) {
-
-	if ( event.touches.length == 0 ) {
-
-		event.preventDefault();
-		isMouseDown = false;
-
-	}
-
 }
 
 /*function createInstructions() {
@@ -229,7 +175,7 @@ function createPool( x, y ) {
 	var x = x || Math.random() * stage[2];
 	var y = y || Math.random() * -200;
 
-	var size = (Math.random() * 100 >> 0) + 100;
+	var size = (Math.random() * 100 >> 0) + 300;
 
     var element = document.createElement( 'div' );
 	element.width = size;
@@ -256,6 +202,17 @@ function createPool( x, y ) {
 
 	element.appendChild( circle );
 
+	var logo = document.createElement( 'i' );
+	logo.onSelectStart = null;
+	logo.className = "fa fa-8x fa-dice-d20";
+	logo.style.width = '100%';
+	logo.style.color = "white";
+	logo.style.position = 'absolute';
+	logo.style.left = '0px';
+	logo.style.top = ((size/4)+(size/16))+'px';
+	logo.style.textAlign = 'center';
+	element.appendChild(logo);
+
 	var b2body = new b2BodyDef();
 
 	var circle = new b2CircleDef();
@@ -276,7 +233,7 @@ function createHexLogo( x, y ) {
 	var x = x || Math.random() * stage[2];
 	var y = y || Math.random() * -200;
 
-	var size = (Math.random() * 100 >> 0) + 20;
+	var size = (Math.random() * 100 >> 0) + 50;
 
     var element = document.createElement( 'div' );
 	element.width = size;

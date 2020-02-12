@@ -1206,9 +1206,8 @@ function CheckNetwork() {
 		switch (netId) {
 			case 1:
 				console.log('Connected to Mainnet');
-				//errorMessage("You are using the mainet, please change to rinkeby");
-				sendok = true;
-				return true;
+				errorMessage("You are using the mainet, please change to rinkeby");
+				return false;
 			case 2:
 				errorMessage("You are using the deprecated Morden testnet, please change to MainNet");
 				console.log('Connected to deprecated Morden test network.');
@@ -1219,8 +1218,9 @@ function CheckNetwork() {
 				return false;
 			case 4:
 				console.log('Connected to Rinkeby test network.');
-				errorMessage("You are using the Rinkeby testnet, please change to MainNet");
-				return false;
+				//errorMessage("You are using the Rinkeby testnet, please change to MainNet");
+				sendok = true;
+				return true;
 			case 42:
 				errorMessage("You are using the Kovan testnet, please change to MainNet");
 				console.log('This is the Kovan test network.');

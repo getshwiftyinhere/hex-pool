@@ -145,12 +145,27 @@ function initcubes(g) {
         }
     }
 }
+function HideBackground(){
+    cancelAnimationFrame(cubes.anim);
+    $(canvas).fadeOut();
+    document.getElementById("tab").innerHTML = '<a onclick="ShowBackground()" style="color:black" href="#top"><button class="approveBtn btn-primary buttonFlash">Show Background&nbsp;<i class="fa fa-eye"></i></button></a>';
+}
+
+function ShowBackground(){
+    initBackground();
+    $(canvas).fadein();
+    document.getElementById("tab").innerHTML = '<a onclick="HideBackground()" style="color:black" href="#top"><button class="approveBtn btn-primary buttonFlash">Hide Background&nbsp;<i class="fa fa-eye-closed"></i></button></a>';
+}
 
 function initBackground() {
     var canvas = document.getElementById("background");
     canvas.width = window.innerWidth;
-    canvas.height= window.innerHeight;
+    canvas.height= window.innerHeight*1.2;
     window.onmousedown = function(evt) {
+        if (cubes.grabbed!=null) {
+            cubes.grabbed.grabbed=false;
+        }
+        cubes.grabbed=null;
         cubes.grabX = evt.clientX;
         cubes.grabY = evt.clientY;
         cubes.mouseX = evt.clientX;
@@ -167,12 +182,12 @@ function initBackground() {
         cubes.mouseX = evt.clientX;
         cubes.mouseY = evt.clientY;
     }
-    window.onmouseup = function(evt) {
+    /*window.onmouseup = function(evt) {
         if (cubes.grabbed!=null) {
             cubes.grabbed.grabbed=false;
         }
         cubes.grabbed=null;
-    }
+    }*/
     window.onresize = function() {
         cancelAnimationFrame(cubes.anim);
         initBackground();
@@ -184,6 +199,17 @@ function initBackground() {
     cubes.height = Math.ceil(cubes.canvasheight/(cubes.scale*1.5));
     cubes.frame=0;
     initcubes(cubes);
+    cubes.grabX = window.innerWidth/2;
+    cubes.grabY = window.innerHeight/2;
+    cubes.mouseX = window.innerWidth/2;
+    cubes.mouseY = window.innerHeight/2;
+    var gY = Math.floor((cubes.mouseY-cubes.margin)/(1.5*cubes.scale));
+    var gXt = (cubes.mouseX-cubes.margin)/(r3*cubes.scale);
+    var gX = gY%2==1?Math.floor(gXt-0.5):Math.floor(gXt);
+    if (gX>=0 && gX<cubes.width && gY>=0 && gY<cubes.height) {
+        cubes.grabbed = cubes.cubes[gY*cubes.width+gX];
+        cubes.grabbed.grabbed=true;
+    }
     (function animloop(){
       cubes.anim = requestAnimationFrame(animloop);
       tick(cubes);

@@ -1,29 +1,86 @@
+var backgroundInit;
 var poolsInit;
-
 var hidden;
+var managerShown;
 var body = document.getElementById("body");
-function ToggleFooter(tab) {
+var startUp;
+if(isDeviceMobile()){
+  $("#tab").hide();
+}
+
+function ShowPools() {
+  if(!isDeviceMobile()){
+    $("#tab2").hide();
+    var tab = document.getElementById("tab");
+    console.log(hidden);
+    if (!hidden) {
+      hidden = true;
+      $("#manager").fadeOut();
+      $("#inDev").fadeIn();
+      body.style.overflowY = "hidden";
+      $("#footer").fadeOut(500, function () {
+        Connect();
+        if (!backgroundInit) {
+          backgroundInit = true;
+          initBackground();
+        }
+        if (poolsInit) {
+          initPools();
+        } else {
+          startUp = setTimeout(function () {
+            $("#overlay").fadeOut(500, function () {
+              initPools();
+              poolsInit = true;
+            });
+          }, 2000);
+        }
+        tab.innerHTML = '<a onclick="ShowPools()" style="color:black" href="#top"><button class="approveBtn btn-primary buttonFlash">Menu&nbsp;<i class="fa fa-eye"></i></button></a>';
+      });
+    } else {
+      clearTimeout(startUp);
+      clearInterval(loopTick);
+      destroyPools();
+      $("#tab2").show();
+      hidden = false;
+      $("#footer").fadeIn(500, function () {
+        tab.innerHTML = '<a onclick="ShowPools()" style="color:black" href="#top"><button class="approveBtn btn-primary buttonFlash">Interactive Pools&nbsp;<i class="fa fa-eye"></i></button></a>';
+        body.style.overflowY = "scroll";
+      });
+    }
+  }
+}
+
+function ShowManager() {
+  managerShown = true;
+  var tab = document.getElementById("tab");
+  var tab2 = document.getElementById("tab2");
+  console.log(hidden);
   if (!hidden) {
-    body.style.overflowY = "hidden";
+    hidden = true;
+    if(!isDeviceMobile()){
+      if (!backgroundInit) {
+        backgroundInit = true;
+        initBackground();
+      }
+    }
+    $("#manager").fadeIn();
+    $("#inDev").fadeOut();
     $("#footer").fadeOut(500, function () {
       Connect();
-      if(!poolsInit){
-        poolsInit = true;
-        initBackground();
-        setTimeout(function(){
-          $("#overlay").fadeOut(500, function () {
-            initPools();
-          });
-        }, 3500);
-      }
-      hidden = true;
-      tab.innerHTML =  '<a onclick="ToggleFooter(this)" style="color:black" href="#top"><button class="approveBtn btn-primary buttonFlash">Menu&nbsp;<i class="fa fa-eye"></i></button></a>';
+      setTimeout(function () {
+        $("#overlay").fadeOut(500, function () {
+          //start loading pool info
+        });
+      }, 2000);
+      
+      tab.innerHTML = '<a onclick="HideBackground()" style="color:black" href="#top"><button class="approveBtn btn-primary buttonFlash">Hide Background&nbsp;<i class="fa fa-eye-closed"></i></button></a>';
+      tab2.innerHTML = '<a onclick="ShowManager()" style="color:black" href="#top"><button class="approveBtn btn-primary buttonFlash">Menu&nbsp;<i class="fa fa-eye"></i></button></a>';
     });
-  }
-  else{
+  } else {
+    hidden = false;
     $("#footer").fadeIn(500, function () {
-      hidden = false;
-      tab.innerHTML =  '<a onclick="ToggleFooter(this)" style="color:black" href="#top"><button class="approveBtn btn-primary buttonFlash">Pools&nbsp;<i class="fa fa-eye"></i></button></a>';
+      tab.innerHTML = '<a onclick="ShowPools()" style="color:black" href="#top"><button class="approveBtn btn-primary buttonFlash">Interactive Pools&nbsp;<i class="fa fa-eye"></i></button></a>';
+      tab2.innerHTML = '<a onclick="ShowManager()" style="color:black" href="#top"><button class="approveBtn btn-primary buttonFlash">Pool Manager&nbsp;<i class="fa fa-eye"></i></button></a>';
       body.style.overflowY = "scroll";
     });
   }
@@ -78,9 +135,9 @@ async function MakeOffer() {
               from: activeAccount
             }).then(function (receipt) {
               successMessage("Offer made! You can cancel it at anytime.");
-              setTimeout(function(){
+              setTimeout(function () {
                 PopulateTables();
-              },3000)
+              }, 3000)
               // receipt
             });
           }
@@ -93,9 +150,9 @@ async function MakeOffer() {
             value: wei
           }).then(function (receipt) {
             successMessage("Offer made! You can cancel it at anytime.");
-            setTimeout(function(){
+            setTimeout(function () {
               PopulateTables();
-            },3000)
+            }, 3000)
             // receipt
           });
         } else {
@@ -112,15 +169,15 @@ async function MakeOffer() {
 }
 
 function ApproveUpdate() {
- /* var approvedHex = document.getElementById("approvedHex");
-  hexContract.methods.allowance(activeAccount, ).call({
-      from: activeAccount
-    })
-    .then(function (result) {
-      console.log(result);
-      approvedHex.innerHTML = result / 10 ** decimals;
-    })
-    */
+  /* var approvedHex = document.getElementById("approvedHex");
+   hexContract.methods.allowance(activeAccount, ).call({
+       from: activeAccount
+     })
+     .then(function (result) {
+       console.log(result);
+       approvedHex.innerHTML = result / 10 ** decimals;
+     })
+     */
 }
 
 function ApproveHex() {
@@ -213,58 +270,212 @@ function DonateHex() {
   }
 }
 
-async function updateTables(){
-    
+async function updateTables() {
+
 }
 
-function enterPool(elem){
-  var value = document.getElementById("heartInput").value;
-  var hex = web3.utils.toBN(value);
-  var hearts = hex * 10 ** decimals;
-  var poolId = parseInt(elem.firstElementChild.innerHTML);
-  poolContract.methods.EnterPool(poolId, hearts).call({
-    from: activeAccount
-  }).then(function () {
-    console.log()
-    showBalance();
+async function enterPool(elem) {
+  await CheckNetwork();
+  if (!sendok) {
+    return;
+  }
+  if (typeof web3 !== "undefined") {
+    var value = document.getElementById("heartInput").value;
+    if (value == null || value <= 0) {
+      errorMessage("Value must be greater than 0");
+      return;
+    }
+    var pool = await poolContract.methods.pools(poolId).call();
+    if (!pool.isActive) {
+      errorMessage("Invalid pool, it may already be staked, finished, or not yet open");
+      return;
+    }
+    var hex = web3.utils.toBN(value);
+    var hearts = hex * 10 ** decimals;
+    var poolId = parseInt(elem.firstElementChild.value);
+    poolContract.methods.EnterPool(poolId, hearts).send({
+      from: activeAccount
+    }).then(function () {
+      console.log()
+      showBalance();
+    });
   }
 }
 
-function exitPool(elem){
-
+async function exitPool(elem) {
+  await CheckNetwork();
+  if (!sendok) {
+    return;
+  }
+  if (typeof web3 !== "undefined") {
+    var entryId = parseInt(elem.firstElementChild.value);
+    var entry = await poolContract.methods.entries(entryId).call();
+    var pool = await poolContract.methods.pools(entry.poolId).call();
+    if (!pool.isActive) {
+      errorMessage("Cannot exit, it may already be staked, finished, or not yet open");
+      return;
+    }
+    if (entry.userAddress != activeAccount) {
+      errorMessage("Invalid wallet, you do not own this entry.");
+      return;
+    }
+    poolContract.methods.ExitPool(entryId).send({
+      from: activeAccount
+    }).then(function () {
+      console.log()
+      showBalance();
+    });
+  }
 }
 
-function endPoolStake(elem){
-
+async function endPoolStake(elem) {
+  await CheckNetwork();
+  if (!sendok) {
+    return;
+  }
+  if (typeof web3 !== "undefined") {
+    var poolId = parseInt(elem.firstElementChild.value);
+    var pool = await poolContract.methods.pools(poolId).call();
+    if (!pool.isStaking || pool.isActive) {
+      errorMessage("Pool not yet staked, no stake to end");
+      return;
+    }
+    if (!pool.stakeEnded) {
+      errorMessage("Cannot early end-stake a pool.");
+      return;
+    }
+    poolContract.methods.EndPoolStake(poolId).send({
+      from: activeAccount
+    }).then(function () {
+      console.log();
+    });
+  }
 }
 
-function withdrawStakeRewards(){
-
+async function withdrawStakeRewards(elem) {
+  await CheckNetwork();
+  if (!sendok) {
+    return;
+  }
+  if (typeof web3 !== "undefined") {
+    var poolId = parseInt(elem.firstElementChild.value);
+    var pool = await poolContract.methods.pools(poolId).call();
+    var rewards = await poolContract.methods.getWithdrawableRewards(poolId).call();
+    if (!pool.isStaking || pool.isActive) {
+      errorMessage("Pool not yet staked, nothing to withdraw");
+      return;
+    }
+    if (!pool.stakeEnded) {
+      errorMessage("Stake not yet finished, nothing to withdraw");
+      return;
+    }
+    if (rewards <= 0) {
+      errorMessage("You have no staking rewards to withdraw");
+      return;
+    }
+    poolContract.methods.WithdrawHEX().send({
+      from: activeAccount
+    }).then(function () {
+      console.log();
+      showBalance();
+    });
+  }
 }
 
-function freezeTokens(){
-
+async function freezeTokens() {
+  await CheckNetwork();
+  if (!sendok) {
+    return;
+  }
+  if (typeof web3 !== "undefined") {
+    var value = document.getElementById("heartInput").value;
+    var balance = await poolContract.methods.balanceOf(activeAccount).call();
+    if (value == null || value <= 0) {
+      errorMessage("Value must be greater than 0");
+      return;
+    }
+    if (balance < value) {
+      errorMessage("Insufficient POOL token balance");
+      return;
+    }
+    var hex = web3.utils.toBN(value);
+    var hearts = hex * 10 ** decimals;
+    poolContract.methods.FreezeTokens(hearts).send({
+      from: activeAccount
+    }).then(function () {
+      console.log();
+      showBalance();
+    });
+  }
 }
 
-function unfreezeTokens(){
-
+async function unfreezeTokens() {
+  await CheckNetwork();
+  if (!sendok) {
+    return;
+  }
+  if (typeof web3 !== "undefined") {
+    var value = document.getElementById("heartInput").value;
+    var frozenBalance = await poolContract.methods.tokenFrozenBalances(activeAccount).call();
+    if (value == null || value <= 0) {
+      errorMessage("Value must be greater than 0");
+      return;
+    }
+    if (frozenBalance < value) {
+      errorMessage("Insufficient frozen POOL token balance");
+      return;
+    }
+    var hex = web3.utils.toBN(value);
+    var hearts = hex * 10 ** decimals;
+    poolContract.methods.UnfreezeTokens(hearts).send({
+      from: activeAccount
+    }).then(function () {
+      console.log();
+      showBalance();
+    });
+  }
 }
 
-function withdrawDivs(){
-
+async function withdrawDivs() {
+  await CheckNetwork();
+  if (!sendok) {
+    return;
+  }
+  if (typeof web3 !== "undefined") {
+    var divs = await poolContract.methods.dividendsOf(activeAccount).call();
+    if (divs <= 0) {
+      errorMessage("You have no dividends to withdraw");
+      return;
+    }
+    poolContract.methods.WithdrawFreezingDivs().call({
+      from: activeAccount
+    }).then(function () {
+      console.log();
+      showBalance();
+    });
+  }
 }
 
-async function getPoolInfo(poolId)
-{
-
+function getPoolInfo(poolId) {
+  return poolContract.methods.pools(poolId).call();
 }
 
-async function getUserInfo(addr){
-
+function getUserInfo(addr) {
+  return poolContract.methods.users(addr).call();
 }
 
-async function getEntryInfo(entryId){
+function getEntryInfo(entryId) {
+  return poolContract.methods.entries(entryId).call();
+}
 
+//returns amount of users by address in a pool
+function getPoolUserCount(poolId) {
+  return poolContract.methods.poolUserCount(poolId).call();
+}
+
+//is address a user of pool
+function isPoolParticipant(poolId) {
+  return poolContract.methods.pools(poolId).poolParticipant(activeAccount).call();
 }
 
 /*---------GET TABLE DATA-----------*/
@@ -273,8 +484,47 @@ async function showBalance() {
   hexBal.innerHTML = "Loading...";
   //get balance
   var hearts = await hexContract.methods.balanceOf(activeAccount).call();
-  var hex= hearts / 10 ** decimals;
+  var hex = hearts / 10 ** decimals;
   hexBal.innerHTML = toFixedMax(hex, 0);
+}
+
+var pool36 = document.getElementById("pool36");
+var pool365 = document.getElementById("pool365");
+var pool3650 = document.getElementById("pool3650");
+
+async function PopulatePools() {
+  var stakeCount = hexContract.methods.stakeCount(activeAccount).call();
+  for (var i = 0; i < stakeCount; i++) {
+    var pool = await poolContract.methods.pools(i).call();
+    if (pool.isActive) {
+      if (pool.stakeDayLength == 36) {
+        var poolIdElem = pool36.firstElementChild;
+      } else if (pool.stakeDayLength == 365) {
+        var poolIdElem = pool365.firstElementChild;
+      } else if (pool.stakeDayLength == 3650) {
+        var poolIdElem = pool3650.firstElementChild;
+      }
+
+      var stakingLength = poolIdElem.nextElementSibling;
+      var poolParticipants = stakingLength.nextElementSibling;
+      var poolValue = poolParticipants.nextElementSibling;
+
+      poolIdElem.value = pool.poolId;
+      stakingLength.innerHTML = pool.poolStakeDayLength;
+      poolParticipants.innerHTML = await poolContract.methods.poolUserCount(pool.poolId).call();
+      poolValue.innerHTML = (pool.poolValue / 10 ** decimals).toFixed() + " / " + (pool.poolStakeThreshold / 10 ** decimals).toFixed();
+    } else if (poolContract.methods.pools(poolId).isStaking) {
+
+    } else if (poolContract.methods.pools(poolId).stakeEnded) {
+
+    } else {
+
+    }
+  }
+}
+
+async function MarkPoolAsEntered(elem) {
+
 }
 
 /*
