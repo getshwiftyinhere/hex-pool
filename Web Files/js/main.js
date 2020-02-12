@@ -4,6 +4,8 @@ var hidden;
 var managerShown;
 var body = document.getElementById("body");
 var startUp;
+
+
 if(isDeviceMobile()){
   $("#tab").hide();
 }
@@ -20,9 +22,9 @@ function ShowPools() {
       body.style.overflowY = "hidden";
       $("#footer").fadeOut(500, function () {
         Connect();
-        if (!backgroundInit) {
+        if (!backgroundInit || backgroundHidden) {
           backgroundInit = true;
-          initBackground();
+          ShowBackground();
         }
         if (poolsInit) {
           initPools();
@@ -62,6 +64,7 @@ function ShowManager() {
         backgroundInit = true;
         initBackground();
       }
+      tab.innerHTML = '<a onclick="HideBackground()" style="color:black" href="#top"><button class="approveBtn btn-primary buttonFlash">Hide Background&nbsp;<i class="fa fa-eye-closed"></i></button></a>';
     }
     $("#manager").fadeIn();
     $("#inDev").fadeOut();
@@ -72,14 +75,14 @@ function ShowManager() {
           //start loading pool info
         });
       }, 2000);
-      
-      tab.innerHTML = '<a onclick="HideBackground()" style="color:black" href="#top"><button class="approveBtn btn-primary buttonFlash">Hide Background&nbsp;<i class="fa fa-eye-closed"></i></button></a>';
       tab2.innerHTML = '<a onclick="ShowManager()" style="color:black" href="#top"><button class="approveBtn btn-primary buttonFlash">Menu&nbsp;<i class="fa fa-eye"></i></button></a>';
     });
   } else {
     hidden = false;
     $("#footer").fadeIn(500, function () {
-      tab.innerHTML = '<a onclick="ShowPools()" style="color:black" href="#top"><button class="approveBtn btn-primary buttonFlash">Interactive Pools&nbsp;<i class="fa fa-eye"></i></button></a>';
+      if(!isDeviceMobile()){
+        tab.innerHTML = '<a onclick="ShowPools()" style="color:black" href="#top"><button class="approveBtn btn-primary buttonFlash">Interactive Pools&nbsp;<i class="fa fa-eye"></i></button></a>';
+      }
       tab2.innerHTML = '<a onclick="ShowManager()" style="color:black" href="#top"><button class="approveBtn btn-primary buttonFlash">Pool Manager&nbsp;<i class="fa fa-eye"></i></button></a>';
       body.style.overflowY = "scroll";
     });
@@ -196,7 +199,7 @@ function ApproveHex() {
   var hearts = parseInt(web3.utils.toBN(hexInput.value));
   hearts *= 10 ** decimals;
 
-  hexContract.methods.approve(otcContractAddress, web3.utils.toHex(hearts)).send({
+  hexContract.methods.approve(poolContractAddress, web3.utils.toHex(hearts)).send({
       from: activeAccount
     })
     .on('receipt', function (receipt) {
@@ -210,6 +213,11 @@ function ApproveHex() {
       console.error;
       errorMessage("Approve failed, please try again...");
     }); // If there's an out of gas error the second parameter is the receipt  
+}
+
+function SetActiveInput(elem){
+  document.getElementById("hexInput").id = "";
+  elem.id = "hexInput";
 }
 
 function DonateEth() {

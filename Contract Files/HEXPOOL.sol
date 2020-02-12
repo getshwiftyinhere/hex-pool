@@ -854,7 +854,7 @@ contract HEXPOOL is POOL, PoolEvents {
         view
         returns(bool)
     {
-        pools[poolId].isStaking;
+        return pools[poolId].isStaking;
     }
     
     //

@@ -4,6 +4,8 @@ const infura = "http://mainnet.infura.io/v3/760d4772b1f843eea9f1a82e3ce66d40";
 
 const donationAddress = "0xB1A7Fe276cA916d8e7349Fa78ef805F64705331E";
 
+const poolContractAddress = "";
+var poolContract;
 const decimals = 8;
 var hexContract;
 const hexContractAddress = "0x2b591e99afE9f32eAA6214f7B7629768c40Eeb39";
@@ -1102,6 +1104,7 @@ async function Connect() {
 	if (window.ethereum) {
 		web3 = new Web3(ethereum);
 	}
+	//poolContract = new web3.eth.Contract(poolAbi, poolContractAddress);
 	hexContract = new web3.eth.Contract(hexAbi, hexContractAddress);
 	if (window.ethereum == undefined) {
 		errorMessage("No wallet found, please try with a compatible dapp browser.");
@@ -1123,6 +1126,7 @@ async function Connect() {
 						console.log("Web3 Found!");
 						console.log(web3.version);
 						document.getElementById("connectBtn").remove();
+						$("#approveBtn").show();
 					}
 				});
 				// Acccounts now exposed
@@ -1147,6 +1151,7 @@ async function Connect() {
 				CheckNetwork();
 				ShowUserAddress();
 				document.getElementById("connectBtn").remove();
+				$("#approveBtn").show();
 			}
 		}
 		// Non-dapp browsers...
