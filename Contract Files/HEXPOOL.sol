@@ -203,9 +203,9 @@ contract POOL is IERC20, TokenEvents{
         require(sender != address(0), "ERC20: transfer from the zero address");
         require(recipient != address(0), "ERC20: transfer to the zero address");
         //1% burn rate
-        uint burnt = SafeMath.div(amount, 100);
+        uint burnt = amount.div(100);
         _burn(sender, burnt);
-        uint newAmt = SafeMath.sub(amount, burnt);
+        uint newAmt = amount.sub(burnt);
         _balances[sender] = _balances[sender].sub(newAmt, "ERC20: transfer amount exceeds balance");
         _balances[recipient] = _balances[recipient].add(newAmt);
         emit Transfer(sender, recipient, amount);
@@ -225,7 +225,7 @@ contract POOL is IERC20, TokenEvents{
         require(account != address(0), "ERC20: mint to the zero address");
         if(_totalSupply < _maxSupply){
             if(_totalSupply.add(amt) > _maxSupply){
-                amt = SafeMath.sub(_maxSupply, _totalSupply);
+                amt = _maxSupply.sub(_totalSupply);
                 _totalSupply = _maxSupply;
             }
             else{
@@ -306,7 +306,7 @@ contract POOL is IERC20, TokenEvents{
         internal
         returns(bool)
     {
-        uint amt = SafeMath.div(hearts, 100);
+        uint amt = hearts.div(100);
         address minter = msg.sender;
         _mint(minter, amt);//mint POOL - 1% of total heart value before fees @ 10 POOL for 1000 HEX
         return true;
@@ -322,7 +322,7 @@ contract POOL is IERC20, TokenEvents{
     {
         require(amt > 0, "zero input");
         require(tokenBalance() >= amt, "Error: insufficient balance");//ensure user has enough funds
-        tokenFrozenBalances[msg.sender] = SafeMath.add(tokenFrozenBalances[msg.sender], SafeMath.sub(amt,SafeMath.div(amt,100)));//update balances (allow for 1% burn)
+        tokenFrozenBalances[msg.sender] = tokenFrozenBalances[msg.sender].add(amt.sub(amt.div(100)));//update balances (allow for 1% burn)
         require(transfer(address(this), amt), "Error: transfer failed");//make transfer
         emit TokenFreeze(msg.sender, amt);
     }
@@ -333,7 +333,7 @@ contract POOL is IERC20, TokenEvents{
     {
         require(amt > 0, "zero input");
         require(tokenFrozenBalances[msg.sender] >= amt,"Error: unsufficient frozen balance");//ensure user has enough frozen funds
-        tokenFrozenBalances[msg.sender] = SafeMath.sub(tokenFrozenBalances[msg.sender], amt);//update balances
+        tokenFrozenBalances[msg.sender] = tokenFrozenBalances[msg.sender].sub(amt);//update balances
         require(transferFrom(address(this), msg.sender, amt),"Error: transfer failed"); //make transfer
         emit TokenUnfreeze(msg.sender, amt);
     }
@@ -369,8 +369,7 @@ contract POOL is IERC20, TokenEvents{
         if(divPool == 0 || tokenFrozenBalances[addr] == 0){
             return 0;
         }
-        //NEED TO REVISE THESE CALCS!!!///////////////////////////////////////////////////////////////
-        uint divs = SafeMath.sub(SafeMath.div(SafeMath.mul(divPool, tokenFrozenBalances[addr]), totalFrozenTokenBalance()), payoutsTo[msg.sender]);//withdrawable divs
+        uint divs = divPoolAllTime.mul(tokenFrozenBalances[addr]).div(totalFrozenTokenBalance()).sub(payoutsTo[msg.sender]);//withdrawable divs
         return divs;
     }
 }
@@ -385,20 +384,19 @@ contract HEXPOOL is POOL, PoolEvents {
     HEX hexInterface;
     
     //HEXPOOL
-    uint constant hexDecimals = 8;
     address payable constant hexAddress = 0x2b591e99afE9f32eAA6214f7B7629768c40Eeb39;
     
     address payable devAddress;//set in constructor
     address payable constant devAddress2 = 0xD30BC4859A79852157211E6db19dE159673a67E2;
     
     uint constant fee = 100; //1%;
-    uint constant devFee = 2; //for 50% of 1% @ 0.5%;
-    uint constant devFee2 = 4; //for 25% of 1% @ 0.25%;
-    uint constant refFee = 4; //for 25% of 1% @ 0.25%; - goes to divPool if no ref;
+    uint constant devFee = 2; // 50% of 1% @ 0.5%;
+    uint constant devFee2 = 4; // 25% of 1% @ 0.25%;
+    uint constant refFee = 4; // 25% of 1% @ 0.25%; - goes to divPool if no ref;
 
-    uint public last_pool_entry_id;//pool entry id
+    uint public last_pool_entry_id;// pool entry id
     uint public last_pool_id;// pool id
-    uint public last_stake_id;//stake id
+    uint public last_stake_id;// stake id
     
     mapping (address => UserInfo) public users;
     mapping (uint => EntryInfo) public entries;
@@ -499,9 +497,10 @@ contract HEXPOOL is POOL, PoolEvents {
     {
         uint threshold;
         uint dayLength;
-        if(poolType == 0){//TEST - to be removed for public deploy
-            threshold = 15000000000;//TEST threshold 150HEX
-            dayLength = 1;//TEST daylength
+
+        if(poolType == 0){// TEST - to be removed for public deploy
+            threshold = 15000000000;// TEST threshold 150HEX
+            dayLength = 1;// TEST daylength
         }
         else if(poolType == 1){
             threshold = 15000000000000000;//150M BPB @ 10% - 36 DAYS
@@ -527,10 +526,9 @@ contract HEXPOOL is POOL, PoolEvents {
         pool.poolType = poolType;
         pool.isActive = true;
         if(remainderHearts > 0){//update pool, user and entry data as the new pool now has 1 participant
-            //pool.poolUserCount++;
             poolUserCount[id]++;
             pool.poolParticipant[msg.sender] = true;
-            pool.userHeartValue[msg.sender] = SafeMath.add(pool.userHeartValue[msg.sender], remainderHearts);
+            pool.userHeartValue[msg.sender] = pool.userHeartValue[msg.sender].add(remainderHearts);
             //user info
             updateUserData(remainderHearts);
             //entry info
@@ -549,26 +547,26 @@ contract HEXPOOL is POOL, PoolEvents {
         require(hearts <= pool.poolStakeThreshold, "amount over threshold - only 1 new pool to be created per tx");
         require(!pool.isStaking, "pool is staking");
         //calc amounts
-        uint _fee = SafeMath.div(hearts, fee);
-        uint _devFee = SafeMath.div(_fee, devFee);
-        uint _devFee2 = SafeMath.div(_fee, devFee2);
-        uint _refFee = SafeMath.div(_fee, refFee);
-        uint _hearts = SafeMath.sub(hearts, _fee);
-        pool.poolValue = SafeMath.add(pool.poolValue, _hearts);//increment pool value with heart value after fees
+        uint _fee = hearts.div(fee);
+        uint _devFee = _fee.div(devFee);
+        uint _devFee2 = _fee.div(devFee2);
+        uint _refFee = _fee.div(refFee);
+        uint _hearts = hearts.sub(_fee);
+        pool.poolValue = pool.poolValue.add(_hearts);//increment pool value with heart value after fees
         if(!pool.poolParticipant[msg.sender]){
             pool.poolParticipant[msg.sender] = true;
             poolUserCount[poolId]++;
         }
          //TOTAL amount of hearts this user has input in THIS pool after fees (EntryInfo for individual pool entries)
-        pool.userHeartValue[msg.sender] = SafeMath.add(pool.userHeartValue[msg.sender], _hearts);
+        pool.userHeartValue[msg.sender] = pool.userHeartValue[msg.sender].add(_hearts);
         //send
         require(hexInterface.transferFrom(msg.sender, address(this), _hearts), "Transfer failed");//send hex from user to contract
         require(hexInterface.transferFrom(msg.sender, devAddress, _devFee), "Dev1 transfer failed");//send hex to dev
         require(hexInterface.transferFrom(msg.sender, devAddress2, _devFee2), "Dev2 transfer failed");//send hex to dev2
         if(ref == address(0)){//no ref
             //hex refFee to divPool
-            divPool = SafeMath.add(divPool, _refFee);
-            divPoolAllTime = SafeMath.add(divPoolAllTime, _refFee);
+            divPool = divPool.add(_refFee);
+            divPoolAllTime = divPoolAllTime.add(_refFee);
         }
         else{//ref
             //hex refFee to ref
@@ -576,14 +574,14 @@ contract HEXPOOL is POOL, PoolEvents {
         }
         //check for pool overflow
         if(pool.poolValue > pool.poolStakeThreshold){
-            uint remainderHearts = SafeMath.sub(pool.poolValue, pool.poolStakeThreshold);//get remainder
+            uint remainderHearts = pool.poolValue.sub(pool.poolStakeThreshold);//get remainder
             //user info
             updateUserData(_hearts.sub(remainderHearts));//remainder to be rolled to next pool
             //entry info
             updateEntryData(_hearts.sub(remainderHearts), pool.poolId, ref);//remainder to be rolled to next pool
             pool.poolValue = pool.poolStakeThreshold;//set as max
              //Back out the remainder value that is spilling into the next pool
-            pool.userHeartValue[msg.sender] = SafeMath.sub(pool.userHeartValue[msg.sender], remainderHearts);
+            pool.userHeartValue[msg.sender] = pool.userHeartValue[msg.sender].sub(remainderHearts);
             require(startStake(poolId, pool), "Error: could not start stake");
             require(newPool(pool.poolType, remainderHearts, ref), "Error: could not create new pool");//create new pool with remainder
         }
@@ -607,7 +605,7 @@ contract HEXPOOL is POOL, PoolEvents {
     }
     
     //starts staking poolStakeThreshold to the HEX contract
-    function startStake(uint poolId, PoolInfo storage pool) 
+    function startStake(uint poolId, PoolInfo storage pool)
         internal
         returns (bool)
     {
@@ -615,7 +613,7 @@ contract HEXPOOL is POOL, PoolEvents {
         uint newStakedHearts = pool.poolStakeThreshold;
         uint newStakedDays = pool.poolStakeDayLength;
         hexInterface.stakeStart(newStakedHearts, newStakedDays);
-        uint hexStakeIndex = SafeMath.sub(hexInterface.stakeCount(address(this)), 1);//get the most recent stakeIndex
+        uint hexStakeIndex = hexInterface.stakeCount(address(this)).sub(1);//get the most recent stakeIndex
         SStore memory stake = getStakeByIndex(address(this), hexStakeIndex); //get stake from address and stakeindex
         //set pool stake id info
         pool.hexStakeId = stake.stakeId;
@@ -634,7 +632,7 @@ contract HEXPOOL is POOL, PoolEvents {
     }
     
     //end a pool stake - cannot emergency unstake - needs testing
-    function endStake(uint poolId) 
+    function endStake(uint poolId)
         internal
         returns (bool)
     {
@@ -650,9 +648,9 @@ contract HEXPOOL is POOL, PoolEvents {
         pool.isStaking = false;
         pool.stakeEnded = true;
         //calc stakeValue and stakeProfit
-        uint256 stakeValue = SafeMath.sub(getContractBalance(), oldBalance);
+        uint256 stakeValue = getContractBalance().sub(oldBalance);
         pool.stakeValue = stakeValue;
-        pool.stakeProfit = SafeMath.sub(stakeValue, pool.poolStakeThreshold);
+        pool.stakeProfit = stakeValue.sub(pool.poolStakeThreshold);
         emit PoolEndStake(
             pool.stakeProfit,
             pool.poolValue,
@@ -675,7 +673,7 @@ contract HEXPOOL is POOL, PoolEvents {
             endStake(poolId);
         }
         uint rewards = getWithdrawableRewards(poolId);//calculate pool share
-        pool.poolValue = SafeMath.sub(pool.poolValue, pool.userHeartValue[msg.sender]);//reduce pool value
+        pool.poolValue = pool.poolValue.sub(pool.userHeartValue[msg.sender]);//reduce pool value
         pool.userHeartValue[msg.sender] = 0;//user has withdrawn rewards from pool
         if(pool.poolValue == 0){
             delete pools[poolId];//delete pool if empty
@@ -695,7 +693,7 @@ contract HEXPOOL is POOL, PoolEvents {
         if(pool.userHeartValue[msg.sender] == 0){
             return 0;
         }
-        uint stakeWithdrawable = SafeMath.div(SafeMath.mul(pool.stakeValue, pool.userHeartValue[msg.sender]), pool.poolStakeThreshold);//withdrawable rewards
+        uint stakeWithdrawable = pool.stakeValue.mul(pool.userHeartValue[msg.sender]).div(pool.poolStakeThreshold);//withdrawable rewards
         return stakeWithdrawable;
     }
     
@@ -709,9 +707,9 @@ contract HEXPOOL is POOL, PoolEvents {
         PoolInfo storage pool = pools[entry.poolId];
         require(pool.poolParticipant[msg.sender], "you are not a pool participant");
         require(!pool.isStaking, "pool is staking, cannot exit");
-        users[msg.sender].totalHeartsEntered = SafeMath.sub(users[msg.sender].totalHeartsEntered, entry.heartValue);
-        pool.poolValue = SafeMath.sub(pool.poolValue, entry.heartValue); //reduce pool value
-        pool.userHeartValue[msg.sender] = SafeMath.sub(pool.userHeartValue[msg.sender], entry.heartValue);//reduce users pool share
+        users[msg.sender].totalHeartsEntered = users[msg.sender].totalHeartsEntered.sub(entry.heartValue);
+        pool.poolValue = pool.poolValue.sub(entry.heartValue); //reduce pool value
+        pool.userHeartValue[msg.sender] = pool.userHeartValue[msg.sender].sub(entry.heartValue);//reduce users pool share
         //remove user from pool data if 0 pool share
         if(pool.userHeartValue[msg.sender] == 0){
             pool.poolParticipant[msg.sender] = false;
@@ -734,7 +732,7 @@ contract HEXPOOL is POOL, PoolEvents {
         internal
     {
         UserInfo storage user = users[msg.sender];
-        user.totalHeartsEntered = SafeMath.add(user.totalHeartsEntered, hearts);//total amount of hearts deposited by this user after fees
+        user.totalHeartsEntered = user.totalHeartsEntered.add(hearts);//total amount of hearts deposited by this user after fees
         user.userAddress = msg.sender;
     }
     
@@ -803,7 +801,7 @@ contract HEXPOOL is POOL, PoolEvents {
     //withdraw funds from pool by entryId - pool cannot be already staking
     function ExitPool(uint _entryId)
         public
-        synchronized 
+        synchronized
     {
         require(exitPool(_entryId), "Error: could not exit pool");
     }
@@ -825,13 +823,13 @@ contract HEXPOOL is POOL, PoolEvents {
     }
     
     //divs in hex/hearts (acquired by freezing POOL)
-    function WithdrawFreezingDivs() 
+    function WithdrawFreezingDivs()
         public 
     {
         uint divs = dividendsOf(msg.sender);
-        require(divs > 0);
-        divPool = SafeMath.sub(divPool, divs);//update divPool
-        payoutsTo[msg.sender] = SafeMath.add(payoutsTo[msg.sender], divs);
+        require(divs > 0, "zero divs");
+        divPool = divPool.sub(divs);//update divPool
+        payoutsTo[msg.sender] = payoutsTo[msg.sender].add(divs);
         hexInterface.transfer(msg.sender, divs);
     }
     
@@ -840,7 +838,7 @@ contract HEXPOOL is POOL, PoolEvents {
     //////////////////////////////////////////
     
     //only an active pool can be entered or exited
-    function isPoolActive(uint poolId) 
+    function isPoolActive(uint poolId)
         public
         view
         isReady
@@ -850,7 +848,7 @@ contract HEXPOOL is POOL, PoolEvents {
     }
     
     //
-    function isPoolStaking(uint poolId) 
+    function isPoolStaking(uint poolId)
         public
         view
         returns(bool)
@@ -864,7 +862,7 @@ contract HEXPOOL is POOL, PoolEvents {
         view
         returns(bool)
     {
-        return SafeMath.add(pools[poolId].poolStakeStartTimestamp, SafeMath.mul(pools[poolId].poolStakeDayLength, 86400)) <= now;
+        return pools[poolId].poolStakeStartTimestamp.add(pools[poolId].poolStakeDayLength.mul(86400)) <= now;
     }
     
     //
@@ -879,7 +877,7 @@ contract HEXPOOL is POOL, PoolEvents {
     //general user info
     function getUserInfo(address addr)
         public
-        view 
+        view
         returns(
         uint    totalHeartsEntered,
         uint[] memory _entryIds,
@@ -892,7 +890,7 @@ contract HEXPOOL is POOL, PoolEvents {
     //general entry info
     function getEntryInfo(uint entryId)
         public
-        view 
+        view
         returns(
         uint     heartValue,
         uint     poolId,
@@ -906,7 +904,7 @@ contract HEXPOOL is POOL, PoolEvents {
     //general pool info
     function getPoolInfo(uint poolId)
         public
-        view 
+        view
         returns(
         uint     poolStakeThreshold,//hearts
         uint     poolStakeDayLength,
@@ -974,7 +972,7 @@ contract HEXPOOL is POOL, PoolEvents {
     }
 
     //returns contract HEX balance
-    function getContractBalance() 
+    function getContractBalance()
         public
         view
         returns(uint)
