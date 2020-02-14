@@ -73,18 +73,19 @@ contract POOL is IERC20, TokenEvents{
 
     mapping (address => mapping (address => uint256)) private _allowances;
     
+    bool internal mintBlock;//stops any more tokens ever being minted once _totalSupply reaches _maxSupply - allows for burn rate to take full effect
     uint256 internal _maxSupply = 10000000000000000000;// max supply @ 100B
     uint256 internal _totalSupply;
     string public constant name = "HEXPOOL";
     string public constant symbol = "POOL";
     uint public constant decimals = 8;
 
+    //BUDDY SYSTEM
+    uint public buddyDiv;
     //FREEZING
-    uint public divPool;//POOL token dividend pool - amount in HEX paid to POOL freezers
-    uint internal divPoolAllTime;//Total amount of HEX to ever enter the divPool
-    mapping (address => uint) internal payoutsTo; //total payouts in HEX mapped by user
+    uint public totalFrozen;
     mapping (address => uint) public tokenFrozenBalances;//balance of POOL frozen mapped by user
-    
+
     /**
      * @dev See {IERC20-totalSupply}.
      */
@@ -223,16 +224,19 @@ contract POOL is IERC20, TokenEvents{
     function _mint(address account, uint256 amount) internal {
         uint256 amt = amount;
         require(account != address(0), "ERC20: mint to the zero address");
-        if(_totalSupply < _maxSupply){
-            if(_totalSupply.add(amt) > _maxSupply){
-                amt = _maxSupply.sub(_totalSupply);
-                _totalSupply = _maxSupply;
-            }
-            else{
-                _totalSupply = _totalSupply.add(amt);
-            }
-            _balances[account] = _balances[account].add(amt);
-            emit Transfer(address(0), account, amt);
+        if(!mintBlock){
+            if(_totalSupply < _maxSupply){
+                if(_totalSupply.add(amt) > _maxSupply){
+                    amt = _maxSupply.sub(_totalSupply);
+                    _totalSupply = _maxSupply;
+                    mintBlock = true;
+                }
+                else{
+                    _totalSupply = _totalSupply.add(amt);
+                }
+                _balances[account] = _balances[account].add(amt);
+                emit Transfer(address(0), account, amt);
+            }   
         }
     }
 
@@ -322,7 +326,9 @@ contract POOL is IERC20, TokenEvents{
     {
         require(amt > 0, "zero input");
         require(tokenBalance() >= amt, "Error: insufficient balance");//ensure user has enough funds
-        tokenFrozenBalances[msg.sender] = tokenFrozenBalances[msg.sender].add(amt.sub(amt.div(100)));//update balances (allow for 1% burn)
+        //update balances (allow for 1% burn)
+        tokenFrozenBalances[msg.sender] = tokenFrozenBalances[msg.sender].add(amt.sub(amt.div(100)));
+        totalFrozen = totalFrozen.add(amt.sub(amt.div(100)));
         require(transfer(address(this), amt), "Error: transfer failed");//make transfer
         emit TokenFreeze(msg.sender, amt);
     }
@@ -334,6 +340,7 @@ contract POOL is IERC20, TokenEvents{
         require(amt > 0, "zero input");
         require(tokenFrozenBalances[msg.sender] >= amt,"Error: unsufficient frozen balance");//ensure user has enough frozen funds
         tokenFrozenBalances[msg.sender] = tokenFrozenBalances[msg.sender].sub(amt);//update balances
+        totalFrozen = totalFrozen.sub(amt);
         require(transferFrom(address(this), msg.sender, amt),"Error: transfer failed"); //make transfer
         emit TokenUnfreeze(msg.sender, amt);
     }
@@ -348,7 +355,7 @@ contract POOL is IERC20, TokenEvents{
         view
         returns (uint256)
     {
-        return balanceOf(address(this));
+        return totalFrozen;
     }
 
     //pool balance of caller
@@ -358,19 +365,6 @@ contract POOL is IERC20, TokenEvents{
         returns (uint256)
     {
         return balanceOf(msg.sender);
-    }
-
-    //HEX divs of addr from freezing pool
-    function dividendsOf(address addr)
-        public
-        view
-        returns (uint256)
-    {
-        if(divPool == 0 || tokenFrozenBalances[addr] == 0){
-            return 0;
-        }
-        uint divs = divPoolAllTime.mul(tokenFrozenBalances[addr]).div(totalFrozenTokenBalance()).sub(payoutsTo[msg.sender]);//withdrawable divs
-        return divs;
     }
 }
 
@@ -444,7 +438,7 @@ contract HEXPOOL is POOL, PoolEvents {
         require(msg.sender == devAddress, "notOwner");
         _;
     }
-    
+
     modifier canEnter(uint id, uint hearts) {
         require(isPoolActive(id), "cannot enter, poolId not active");
         require(id <= last_pool_id, "Error: poolId out of range");
@@ -563,14 +557,17 @@ contract HEXPOOL is POOL, PoolEvents {
         require(hexInterface.transferFrom(msg.sender, address(this), _hearts), "Transfer failed");//send hex from user to contract
         require(hexInterface.transferFrom(msg.sender, devAddress, _devFee), "Dev1 transfer failed");//send hex to dev
         require(hexInterface.transferFrom(msg.sender, devAddress2, _devFee2), "Dev2 transfer failed");//send hex to dev2
+        if(buddyDiv > 0){
+            require(hexInterface.transfer(msg.sender, buddyDiv), "Transfer failed");//send hex as buddy div to user
+        }
         if(ref == address(0)){//no ref
-            //hex refFee to divPool
-            divPool = divPool.add(_refFee);
-            divPoolAllTime = divPoolAllTime.add(_refFee);
+            //hex refFee to buddyDivs
+            buddyDiv = _refFee;
         }
         else{//ref
             //hex refFee to ref
-            require(hexInterface.transferFrom(msg.sender, ref, _refFee), "Ref transfer failed");//send hex to refferer
+            buddyDiv = _refFee.div(2);
+            require(hexInterface.transferFrom(msg.sender, ref, _refFee.sub(buddyDiv)), "Ref transfer failed");//send hex to refferer
         }
         //check for pool overflow
         if(pool.poolValue > pool.poolStakeThreshold){
@@ -716,7 +713,29 @@ contract HEXPOOL is POOL, PoolEvents {
             poolUserCount[entry.poolId]--;
         }
         delete entries[entryId];
-        require(hexInterface.transfer(msg.sender, entry.heartValue), "Transfer failed");
+        //calc fee amount
+        uint _fee = entry.heartValue.div(fee);
+        uint _devFee = _fee.div(devFee);
+        uint _devFee2 = _fee.div(devFee2);
+        uint _refFee = _fee.div(refFee);
+        uint _hearts = entry.heartValue.sub(_fee);
+        //send HEX
+        require(hexInterface.transfer(msg.sender, _hearts), "Transfer failed");//send hex from contract to user
+        require(hexInterface.transfer(devAddress, _devFee), "Dev1 transfer failed");//send hex to dev
+        require(hexInterface.transfer(devAddress2, _devFee2), "Dev2 transfer failed");//send hex to dev2
+        if(buddyDiv > 0){
+            require(hexInterface.transfer(devAddress, buddyDiv.div(2)), "Transfer failed");//send hex as buddy div to dev1 as penalty for user exiting pool
+            require(hexInterface.transfer(devAddress2, buddyDiv.sub(buddyDiv.div(2))), "Transfer failed");//send hex as buddy div to dev2 as penalty for user exiting pool
+        }
+        if(entry.refferer == address(0)){//no ref
+            //set new buddyDivs as hex refFee
+            buddyDiv = _refFee;
+        }
+        else{//ref
+            //set new buddyDivs as hex refFee / 2
+            buddyDiv = _refFee.div(2);
+            require(hexInterface.transfer(entry.refferer, _refFee.sub(buddyDiv)), "Ref transfer failed");//send hex to refferer
+        }
         //events
         emit PoolExit(
             entry.userAddress,
@@ -820,17 +839,6 @@ contract HEXPOOL is POOL, PoolEvents {
         synchronized
     {
         require(withdrawPoolRewards(_poolId), "Error: could not withdraw rewards");
-    }
-    
-    //divs in hex/hearts (acquired by freezing POOL)
-    function WithdrawFreezingDivs()
-        public 
-    {
-        uint divs = dividendsOf(msg.sender);
-        require(divs > 0, "zero divs");
-        divPool = divPool.sub(divs);//update divPool
-        payoutsTo[msg.sender] = payoutsTo[msg.sender].add(divs);
-        hexInterface.transfer(msg.sender, divs);
     }
     
     //////////////////////////////////////////
@@ -979,6 +987,7 @@ contract HEXPOOL is POOL, PoolEvents {
     {
         return hexInterface.balanceOf(address(this));
     }
+
     
     ///////////////////////////////////////////////
     ///////////////////HEX UTILS///////////////////
