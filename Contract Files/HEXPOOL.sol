@@ -386,7 +386,7 @@ contract HEXPOOL is POOL, PoolEvents {
     uint constant fee = 100; //1%;
     uint constant devFee = 2; // 50% of 1% @ 0.5%;
     uint constant devFee2 = 4; // 25% of 1% @ 0.25%;
-    uint constant refFee = 4; // 25% of 1% @ 0.25%; - goes to divPool if no ref;
+    uint constant refFee = 4; // 25% of 1% @ 0.25%; - 100% goes to buddyDiv if no ref, 50% if ref;
 
     uint public last_pool_entry_id;// pool entry id
     uint public last_pool_id;// pool id
