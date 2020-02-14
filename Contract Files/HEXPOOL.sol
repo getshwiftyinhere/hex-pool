@@ -15,23 +15,23 @@ contract PoolEvents {
 
 //when a user enters a pool
     event PoolEntry(
-        address user,//msg.sender
+        address indexed user,//msg.sender
         uint indexed heartValue,
         uint indexed entryId,
-        uint indexed poolId
+        uint poolId
     );
     
 //when a user exits a pool
     event PoolExit(
-        address user,//msg.sender
+        address indexed user,//msg.sender
         uint indexed heartValue,
         uint indexed entryId,
-        uint indexed poolId
+        uint poolId
     );
 
 //when a pool starts staking
     event PoolStartStake(
-        uint indexed heartValue,//always 150m
+        uint heartValue,//always 150m
         uint indexed dayLength,
         uint indexed poolId,
         uint hexStakeId
