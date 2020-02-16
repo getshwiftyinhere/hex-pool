@@ -45,6 +45,12 @@ contract PoolEvents {
         uint indexed poolId,
         uint hexStakeId
     );
+
+//when an ended stakes rewards are withdrawn
+    event Withdrawal(
+        address indexed user,
+        uint indexed heartValue
+    );
 }
 
 contract TokenEvents {
@@ -677,6 +683,7 @@ contract HEXPOOL is POOL, PoolEvents {
             delete pools[poolId];//delete pool if empty
         }
         require(hexInterface.transfer(msg.sender, rewards), "Transfer failed");//transfer users share
+        emit Withdrawal(msg.sender, rewards);
         return true;
     }
     
