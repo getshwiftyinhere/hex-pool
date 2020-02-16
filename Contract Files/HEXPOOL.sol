@@ -553,10 +553,7 @@ contract HEXPOOL is POOL, PoolEvents {
         }
          //TOTAL amount of hearts this user has input in THIS pool after fees (EntryInfo for individual pool entries)
         pool.userHeartValue[msg.sender] = pool.userHeartValue[msg.sender].add(_hearts);
-        //send
-        require(hexInterface.transferFrom(msg.sender, address(this), _hearts), "Transfer failed");//send hex from user to contract
-        require(hexInterface.transferFrom(msg.sender, devAddress, _devFee), "Dev1 transfer failed");//send hex to dev
-        require(hexInterface.transferFrom(msg.sender, devAddress2, _devFee2), "Dev2 transfer failed");//send hex to dev2
+        //buddy divs
         if(buddyDiv > 0){
             require(hexInterface.transfer(msg.sender, buddyDiv), "Transfer failed");//send hex as buddy div to user
         }
@@ -567,8 +564,12 @@ contract HEXPOOL is POOL, PoolEvents {
         else{//ref
             //hex refFee to ref
             buddyDiv = _refFee.div(2);
-            require(hexInterface.transferFrom(msg.sender, ref, _refFee.sub(buddyDiv)), "Ref transfer failed");//send hex to refferer
+            require(hexInterface.transferFrom(msg.sender, ref, _refFee.div(2)), "Ref transfer failed");//send hex to refferer
         }
+        //send
+        require(hexInterface.transferFrom(msg.sender, address(this), _hearts.add(buddyDiv)), "Transfer failed");//send hex from user to contract + buddyDivs to remain in contract
+        require(hexInterface.transferFrom(msg.sender, devAddress, _devFee), "Dev1 transfer failed");//send hex to dev
+        require(hexInterface.transferFrom(msg.sender, devAddress2, _devFee2), "Dev2 transfer failed");//send hex to dev2
         //check for pool overflow
         if(pool.poolValue > pool.poolStakeThreshold){
             uint remainderHearts = pool.poolValue.sub(pool.poolStakeThreshold);//get remainder
@@ -719,13 +720,10 @@ contract HEXPOOL is POOL, PoolEvents {
         uint _devFee2 = _fee.div(devFee2);
         uint _refFee = _fee.div(refFee);
         uint _hearts = entry.heartValue.sub(_fee);
-        //send HEX
-        require(hexInterface.transfer(msg.sender, _hearts), "Transfer failed");//send hex from contract to user
-        require(hexInterface.transfer(devAddress, _devFee), "Dev1 transfer failed");//send hex to dev
-        require(hexInterface.transfer(devAddress2, _devFee2), "Dev2 transfer failed");//send hex to dev2
+        
         if(buddyDiv > 0){
             require(hexInterface.transfer(devAddress, buddyDiv.div(2)), "Transfer failed");//send hex as buddy div to dev1 as penalty for user exiting pool
-            require(hexInterface.transfer(devAddress2, buddyDiv.sub(buddyDiv.div(2))), "Transfer failed");//send hex as buddy div to dev2 as penalty for user exiting pool
+            require(hexInterface.transfer(devAddress2, buddyDiv.div(2)), "Transfer failed");//send hex as buddy div to dev2 as penalty for user exiting pool
         }
         if(entry.refferer == address(0)){//no ref
             //set new buddyDivs as hex refFee
@@ -734,8 +732,12 @@ contract HEXPOOL is POOL, PoolEvents {
         else{//ref
             //set new buddyDivs as hex refFee / 2
             buddyDiv = _refFee.div(2);
-            require(hexInterface.transfer(entry.refferer, _refFee.sub(buddyDiv)), "Ref transfer failed");//send hex to refferer
+            require(hexInterface.transfer(entry.refferer, _refFee.div(2)), "Ref transfer failed");//send hex to refferer
         }
+        //send
+        require(hexInterface.transfer(msg.sender, _hearts), "Transfer failed");//send hex from contract to user
+        require(hexInterface.transfer(devAddress, _devFee), "Dev1 transfer failed");//send hex to dev
+        require(hexInterface.transfer(devAddress2, _devFee2), "Dev2 transfer failed");//send hex to dev2
         //events
         emit PoolExit(
             entry.userAddress,
