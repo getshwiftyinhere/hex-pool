@@ -875,7 +875,8 @@ contract HEXPOOL is POOL, PoolEvents {
         view
         returns(bool)
     {
-        return pools[poolId].poolStakeStartTimestamp.add(pools[poolId].poolStakeDayLength.mul(86400)) <= now;
+        //add 1 to stakeDayLength to account for stake pending time
+        return pools[poolId].poolStakeStartTimestamp.add((pools[poolId].poolStakeDayLength.add(1)).mul(86400)) <= now;
     }
 
     //
