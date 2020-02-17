@@ -155,7 +155,8 @@ contract POOL is IERC20, TokenEvents{
         _approve(sender, msg.sender, _allowances[sender][msg.sender].sub(amount, "ERC20: transfer amount exceeds allowance"));
         return true;
     }
-
+    
+    
     /**
      * @dev Atomically increases the allowance granted to `spender` by the caller.
      *
@@ -211,10 +212,10 @@ contract POOL is IERC20, TokenEvents{
         require(recipient != address(0), "ERC20: transfer to the zero address");
         //1% burn rate
         uint burnt = amount.div(100);
-        _burn(sender, burnt);
         uint newAmt = amount.sub(burnt);
         _balances[sender] = _balances[sender].sub(newAmt, "ERC20: transfer amount exceeds balance");
         _balances[recipient] = _balances[recipient].add(newAmt);
+        _burn(sender, burnt);
         emit Transfer(sender, recipient, amount);
     }
 
@@ -335,7 +336,7 @@ contract POOL is IERC20, TokenEvents{
         //update balances (allow for 1% burn)
         tokenFrozenBalances[msg.sender] = tokenFrozenBalances[msg.sender].add(amt.sub(amt.div(100)));
         totalFrozen = totalFrozen.add(amt.sub(amt.div(100)));
-        require(transfer(address(this), amt), "Error: transfer failed");//make transfer
+        _transfer(msg.sender, address(this), amt);//make transfer and burn
         emit TokenFreeze(msg.sender, amt);
     }
 
@@ -347,7 +348,7 @@ contract POOL is IERC20, TokenEvents{
         require(tokenFrozenBalances[msg.sender] >= amt,"Error: unsufficient frozen balance");//ensure user has enough frozen funds
         tokenFrozenBalances[msg.sender] = tokenFrozenBalances[msg.sender].sub(amt);//update balances
         totalFrozen = totalFrozen.sub(amt);
-        require(transferFrom(address(this), msg.sender, amt),"Error: transfer failed"); //make transfer
+        _transfer(address(this), msg.sender, amt);//make transfer and burn 
         emit TokenUnfreeze(msg.sender, amt);
     }
 
