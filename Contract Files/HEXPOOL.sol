@@ -398,7 +398,7 @@ contract HEXPOOL is POOL, PoolEvents {
     uint public last_pool_id;// pool id
     uint public last_stake_id;// stake id
 
-    uint public minEntryHearts;
+    uint public minEntryHearts;//minimum entry value
 
     mapping (address => UserInfo) public users;
     mapping (uint => EntryInfo) public entries;
@@ -1000,7 +1000,7 @@ contract HEXPOOL is POOL, PoolEvents {
     ///////////////////////////////////////////////
     //////////////////MUTABLE//////////////////////
     //////////////////////////////////////////////
-    
+
     function setMinEntry(uint hearts)
         public
         onlyOwner
