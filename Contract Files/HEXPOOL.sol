@@ -398,6 +398,8 @@ contract HEXPOOL is POOL, PoolEvents {
     uint public last_pool_id;// pool id
     uint public last_stake_id;// stake id
 
+    uint public minEntryHearts;
+
     mapping (address => UserInfo) public users;
     mapping (uint => EntryInfo) public entries;
     mapping (uint => PoolInfo) public pools;
@@ -448,7 +450,7 @@ contract HEXPOOL is POOL, PoolEvents {
     modifier canEnter(uint id, uint hearts) {
         require(isPoolActive(id), "cannot enter, poolId not active");
         require(id <= last_pool_id, "Error: poolId out of range");
-        require(hearts > 0, "Invalid value");
+        require(hearts > minEntryHearts, "Error: value must be greater than minEntryHearts");
         _;
     }
 
@@ -483,6 +485,7 @@ contract HEXPOOL is POOL, PoolEvents {
         for(uint i = 0; i < 3; i++){
             newPool(i, 0, address(0));
         }
+        setMinEntry(100000000000);//1000 HEX @ contract launch, may change dependant on price.
         ready = true;
     }
 
@@ -992,6 +995,17 @@ contract HEXPOOL is POOL, PoolEvents {
         returns(uint)
     {
         return hexInterface.balanceOf(address(this));
+    }
+
+    ///////////////////////////////////////////////
+    //////////////////MUTABLE//////////////////////
+    //////////////////////////////////////////////
+    
+    function setMinEntry(uint hearts)
+        public
+        onlyOwner
+    {
+        minEntryHearts = hearts;
     }
 
     ///////////////////////////////////////////////
