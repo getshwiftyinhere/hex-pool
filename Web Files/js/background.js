@@ -169,7 +169,7 @@ function ShowBackground(){
 function initBackground() {
     var canvas = document.getElementById("background");
     canvas.width = window.innerWidth;
-    canvas.height= window.innerHeight;
+    canvas.height= window.innerHeight*1.1;
     window.onmousedown = function(evt) {
         if (cubes.grabbed!=null) {
             cubes.grabbed.grabbed=false;

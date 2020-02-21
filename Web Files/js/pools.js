@@ -32,10 +32,6 @@ function initPools() {
 
 	canvas = document.getElementById( 'pools' );
 
-	document.onmousedown = onDocumentMouseDown;
-	document.onmouseup = onDocumentMouseUp;
-	document.onmousemove = onDocumentMouseMove;
-	//document.ondblclick = onDocumentDoubleClick;
 
 	// init box2d
 
@@ -57,7 +53,10 @@ function play() {
 }
 
 function resetPools() {
-
+	document.onmousedown = onDocumentMouseDown;
+	document.onmouseup = onDocumentMouseUp;
+	document.onmousemove = onDocumentMouseMove;
+	//document.ondblclick = onDocumentDoubleClick;
 	var i;
 	// color theme
 	theme = themes[ Math.random() * themes.length >> 0 ];
@@ -89,7 +88,6 @@ function destroyPools(){
 			body = null;
 		}
 	}
-
 }
 
 //
