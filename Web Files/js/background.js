@@ -1,6 +1,8 @@
-var cubes = {"scale":40,
-    "width":15,
-    "height":15,
+var backgroundHidden;
+
+var cubes = {"scale":60,
+    "width":22.5,
+    "height":22.5,
     "grabbed":null,
     "cubes":[],
     "k":0.01,
@@ -22,7 +24,7 @@ var hr3=r3/2;
     if (!window.requestAnimationFrame)
         window.requestAnimationFrame = function(callback, element) {
             var currTime = new Date().getTime();
-            var timeToCall = Math.max(0, 16 - (currTime - lastTime));
+            var timeToCall = Math.max(0, 32 - (currTime - lastTime));
             var id = window.setTimeout(function() { callback(currTime + timeToCall); }, 
               timeToCall);
             lastTime = currTime + timeToCall;
@@ -80,6 +82,9 @@ function isoCube(ctx,s,c) {
 
 
 function tick(g) {
+    if(backgroundHidden){
+        return;
+    }
     g.frame++;
     g.ctx.setTransform(1,0,0,1,0,0);
     g.ctx.clearRect(0,0,g.canvaswidth,g.canvasheight);
@@ -145,12 +150,31 @@ function initcubes(g) {
         }
     }
 }
+function HideBackground(){
+    backgroundHidden = true;
+    cancelAnimationFrame(cubes.anim);
+    $("#backgroundBackup").fadeIn();
+    $("#background").fadeOut();
+    document.getElementById("tab").innerHTML = '<a onclick="ShowBackground()" style="color:black" href="#top"><button class="approveBtn btn-primary buttonFlash">Show Background&nbsp;<i class="fa fa-eye"></i></button></a>';
+}
+
+function ShowBackground(){
+    backgroundHidden = false;
+    initBackground();
+    $("#backgroundBackup").fadeOut();
+    $('#background').fadeIn();
+    document.getElementById("tab").innerHTML = '<a onclick="HideBackground()" style="color:black" href="#top"><button class="approveBtn btn-primary buttonFlash">Hide Background&nbsp;<i class="fa fa-eye-slash"></i></button></a>';
+}
 
 function initBackground() {
     var canvas = document.getElementById("background");
     canvas.width = window.innerWidth;
-    canvas.height= window.innerHeight;
+    canvas.height= window.innerHeight*1.1;
     window.onmousedown = function(evt) {
+        if (cubes.grabbed!=null) {
+            cubes.grabbed.grabbed=false;
+        }
+        cubes.grabbed=null;
         cubes.grabX = evt.clientX;
         cubes.grabY = evt.clientY;
         cubes.mouseX = evt.clientX;
@@ -167,12 +191,12 @@ function initBackground() {
         cubes.mouseX = evt.clientX;
         cubes.mouseY = evt.clientY;
     }
-    window.onmouseup = function(evt) {
+    /*window.onmouseup = function(evt) {
         if (cubes.grabbed!=null) {
             cubes.grabbed.grabbed=false;
         }
         cubes.grabbed=null;
-    }
+    }*/
     window.onresize = function() {
         cancelAnimationFrame(cubes.anim);
         initBackground();
@@ -184,6 +208,17 @@ function initBackground() {
     cubes.height = Math.ceil(cubes.canvasheight/(cubes.scale*1.5));
     cubes.frame=0;
     initcubes(cubes);
+    cubes.grabX = window.innerWidth/2;
+    cubes.grabY = window.innerHeight/2;
+    cubes.mouseX = window.innerWidth/2;
+    cubes.mouseY = window.innerHeight/2;
+    var gY = Math.floor((cubes.mouseY-cubes.margin)/(1.5*cubes.scale));
+    var gXt = (cubes.mouseX-cubes.margin)/(r3*cubes.scale);
+    var gX = gY%2==1?Math.floor(gXt-0.5):Math.floor(gXt);
+    if (gX>=0 && gX<cubes.width && gY>=0 && gY<cubes.height) {
+        cubes.grabbed = cubes.cubes[gY*cubes.width+gX];
+        cubes.grabbed.grabbed=true;
+    }
     (function animloop(){
       cubes.anim = requestAnimationFrame(animloop);
       tick(cubes);

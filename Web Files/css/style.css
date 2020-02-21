@@ -1,15 +1,30 @@
-* {
-  margin: 0;
-  padding: 0;
-}
-
 body {
   margin:0;
+  padding: 0;
   overflow-x:hidden!important;
   background-color: #888;
-  -webkit-font-smoothing: antialiased;
 }
 
+#background{
+  top:-50px;
+  position: fixed;
+  z-index:-1;
+}
+
+#backgroundBackup{
+  width:100%;
+  height: 250%;
+  background: linear-gradient(to top right, #fbff00, #ff00ea);
+  position: absolute;
+  top:0px;
+  left:0px;
+}
+
+@media(max-width:768px){
+  #backgroundBackup{
+    background: #888;
+  } 
+}
 #nav-bar {
   position: sticky;
   top: 0;
@@ -70,72 +85,6 @@ body {
   outline: none !important;
 }
 
-/* --------- Banner ---------- */
-.banner {
-}
-
-.promo-title {
-  font-size: 3rem;
-  font-weight: 600;
-  margin-top: 3em;
-}
-
-@media(max-width:468px) {
-  .promo-title {
-    font-size: 2.5rem;
-    margin-top: 2.5em;
-  }
-}
-
-.join-title {
-  font-size: 1.44rem;
-}
-
-.link-play {
-  font-size: 16px;
-  text-decoration: none;
-}
-
-.link-play:hover {
-  text-shadow: 0px 0px 2px #fbff00;
-  color: white;
-  text-decoration: none !important;
-}
-
-.play-btn {
-  width: 45px;
-  margin: 20px 0;
-  margin-right: 1.5em;
-  text-decoration: none !important;
-  transition: transform 1.2s;
-}
-
-.playBtn {
-  animation-name: playPulse;
-  animation-duration: 2s;
-  animation-iteration-count: infinite;
-  animation-timing-function: ease-in-out;
-}
-
-.play-btn:hover {
-  color: #444;
-  text-decoration: none !important;
-  transform: scale(1.2);
-}
-
-.banner a {
-  color: #fff;
-  text-decoration: none !important;
-}
-
-.img-fluid {
-  margin-top: 4rem;
-}
-
-.bottom-img {
-  width: 100%;
-}
-
 .hexHr::after {
   content: '';
   background: linear-gradient(to top right, #fbff00, #ff00ea);
@@ -149,43 +98,6 @@ body {
   margin-bottom: 50px;
 }
 
-#services .btn-primary:hover {
-  transform: scale(1.2);
-}
-
-/* -----------   About -------------*/
-#about {
-  color: #111111;
-  background-color: #ffffff;
-  padding-bottom: 6rem;
-  padding-top: 3rem;
-}
-
-.about-title {
-  font-size: 1.6em;
-  margin-top: 5%;
-  font-weight: 600;
-}
-
-.about-title i {
-  animation-name: playPulse;
-  animation-duration: 1s;
-  animation-iteration-count: infinite;
-  animation-timing-function: ease-in;
-}
-
-.about-title i:hover {
-  cursor: pointer;
-}
-
-#about ul li {
-  margin: 10px 0;
-}
-
-#about ul {
-  margin-left: 20px;
-}
-
 /* ----- Footer ------*/
 #footer {
   padding-top:200px;
@@ -196,6 +108,7 @@ body {
   left:0px;
   color: white;
   background: linear-gradient(to top right, #868686, #000000);
+  z-index:3;
 }
 
 .footer-img {
@@ -306,7 +219,6 @@ a:hover {
   transition: all linear 0.3s;
 }
 
-
 .approveBtn {
   box-shadow: none !important;
   width:auto;
@@ -327,6 +239,30 @@ a:hover {
   border: 5px white solid;
   color: #fff;
   transition: all linear 0.3s;
+  cursor:pointer;
+}
+
+.poolBtn {
+  box-shadow: none !important;
+  width:auto;
+  min-width: 100px;
+  height: 100px;
+  border: 10px white solid;
+  border-radius: 50%;
+  background: linear-gradient(to top right, #fbff00, #ff00ea);
+  color: white;
+  font-weight: bold;
+  transition: transform 1.2s;
+  padding-left:10px;
+  padding-right:10px;
+}
+
+.poolBtn:hover {
+  transform: scale(1.2);
+  border: 5px white solid;
+  color: #fff;
+  transition: all linear 0.3s;
+  cursor:pointer;
 }
 
 .addressBreak {
@@ -375,14 +311,6 @@ a:hover {
   font-weight: 700;
 }
 
-.makeOffer {
-  font-size: 20px;
-}
-
-.openOffers {
-  font-size: 20px;
-}
-
 .openOffers:hover {}
 
 .orderTypes {}
@@ -400,10 +328,6 @@ a:hover {
   border: 5px solid black;
   border-radius: 5px;
   margin-bottom: 25px;
-}
-
-.marketTitle {
-  font-size: 22px;
 }
 
 .contractBalances {
@@ -508,13 +432,40 @@ footer{
   min-width:100px;
   height:50px;
   position: absolute;
-  z-index:0;
+  z-index:4;
   top:70px;
   right:0px;
   font-weight: 700;
-  font-size: 22px;
+  font-size: 20px;
   padding-left:10px;
   padding-right:10px;
+}
+
+
+#tab2{
+  border-radius:5px;
+  min-width:100px;
+  height:50px;
+  position: absolute;
+  z-index:4;
+  top:125px;
+  right:0px;
+  font-weight: 700;
+  font-size: 20px;
+  padding-left:10px;
+  padding-right:10px;
+}
+
+@media(max-width:568px){
+  #tab2{
+    top:70px;
+  }
+}
+
+#manager{
+  width:100%;
+  height:100%;
+  display:none;
 }
 
 #connectBtn{
@@ -522,11 +473,24 @@ footer{
   min-width:100px;
   height:50px;
   position: absolute;
-  z-index:0;
+  z-index:4;
   top:70px;
   left:0px;
   font-weight: 700;
-  font-size: 22px;
+  font-size: 20px;
+  padding-left:10px;
+  padding-right:10px;
+}
+#approveBtn{
+  border-radius:5px;
+  min-width:100px;
+  height:50px;
+  position: absolute;
+  z-index:4;
+  top:70px;
+  left:0px;
+  font-weight: 700;
+  font-size: 20px;
   padding-left:10px;
   padding-right:10px;
 }
@@ -538,24 +502,168 @@ footer{
   animation-timing-function: ease-in-out;
 }
 
-#overlay{
-  /*background-color: rgba(0,0,0,0.3);*/
-  width:100%;
-  height:100%;
-  position: absolute;
-  top:0px;
-  left:0px;
-}
-
 .poolImg{
   width:100%; 
   position: absolute; 
   top:50px; 
   transform:rotateX(180deg);
-  z-index: 1;
+  z-index: 4;
 }
 @media(max-width:568px){
   .poolImg{ 
-    top:70px; 
+    top:65px; 
   }
+}
+
+#overlay{
+  background: linear-gradient(to top right, #868686, #000000);
+  width:100%;
+  min-height:100%;
+  position: absolute;
+  top:0px;
+  left:0px;
+  z-index:2;
+}
+
+.poolsTab{
+  width:100%;
+  text-align: center;
+  position: absolute;
+  top:200px;
+}
+
+.poolTab{
+  background: radial-gradient(#ffffff, #000000, #000000);
+  color:white;
+  border-radius: 50%;
+  border:solid 10px white;
+  box-shadow:0px 0px 10px black;
+  text-shadow:0px 0px 5px black;
+  padding:10px;
+  margin:auto;
+  min-height: 400px;
+  max-width:400px;
+  font-weight: 700;
+  font-size:20px;
+}
+
+.loading{
+  color:white;
+  position: absolute;
+  top:24.5%;
+  left:49%;
+  animation-name:loadSpin;
+  animation-duration: 2s;
+  animation-iteration-count: infinite;
+  animation-timing-function: ease-in-out;
+}
+
+.infoBox{
+  background: linear-gradient(to top right, rgba(134,134,134), rgba(0,0,0));
+  color:white;
+  padding:15px;
+  border-radius: 15px;
+  border:white 10px solid;
+  width:98%;
+  margin:auto;
+  min-height:400px;
+  max-height:800px;
+  overflow-y: scroll;
+  box-shadow:0px 0px 10px black;
+}
+
+.infoBox::-webkit-scrollbar {
+  display: none;
+}
+
+.titleBox{
+  color:white;
+  text-shadow:0px 0px 5px black;
+  margin-bottom:50px;
+}
+
+@keyframes loadSpin {
+  0% {
+    text-shadow:0px 0px 0px yellow;
+    transform:rotateZ(0deg);
+  }
+
+  50% {
+    text-shadow:0px 0px 5px yellow;
+    transform:rotateZ(360deg);
+  }
+
+  100% {
+    text-shadow:0px 0px 0px yellow;
+    transform:rotateZ(720deg);
+  }
+}
+
+.logoPool{
+  position: absolute;
+  top:50%;
+  left:50%;
+  z-index:1;
+  text-shadow:0px 0px 5px black;
+  animation-name:poolScale;
+  animation-duration: 3s;
+  animation-iteration-count: infinite;
+  animation-timing-function: ease-in-out;
+  transform:scale(2) translate(-25%,-25%);
+}
+
+.logoHexLotto{
+  position: absolute;
+  top:50%;
+  left:50%;
+  z-index:1;
+  animation-name:lottoScale;
+  animation-duration: 3s;
+  animation-iteration-count: infinite;
+  animation-timing-function: ease-in-out;
+  transform: scale(1) translate(-50%,-50%);
+}
+
+@media(max-width:568px){
+  .poolTab{ 
+    min-height: 375px;
+    max-width:375px;
+    font-weight: 700;
+    font-size:18px;
+  }
+  .logoPool{
+    transform:scale(1.1) translate(-45%,-45%);
+  }
+}
+@keyframes poolScale {
+  0% {
+    transform: scale(2) translate(-25%,-25%);
+  }
+
+  50% {
+    transform: scale(2.2) translate(-22.5%,-22.5%);
+  }
+
+  100% {
+    transform: scale(2) translate(-25%,-25%);
+  }
+}
+
+@keyframes lottoScale {
+  0% {
+    transform: scale(1) translate(-50%,-50%);
+  }
+
+  50% {
+    transform: scale(1.1) translate(-45%,-45%);
+  }
+
+  100% {
+    transform: scale(1) translate(-50%,-50%);
+  }
+}
+
+.poolInnerTab{
+  position: relative;
+  z-index:2;
 }
