@@ -4,19 +4,47 @@
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>HEXPOOL | HEX Pool Staking</title>
-  <meta name="keywords" content="hex, hex whale, pool staking, hex staking, hex pool, hex crypto, hex eth">
-  <meta name="description" content="HEXPOOL | Pool staking for HEX, utilize the BPB bonus and maximise gains!">
+  <!-- <meta name="viewport" content="width=device-width, initial-scale=1">-->
+  <meta name="viewport" content="width=598, user-scalable=no">
+  <title>HEXPOOL | HEX Pool Staking - Bigger Pays Better</title>
+  <meta name="keywords" content="hex coin, hex pool staking, hex staking, hex pool, hex crypto, hex">
+  <meta name="description" content="HEXPOOL | Pool staking for HEX, utilize the BPB bonus and maximize gains!">
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css">
   <script src="https://code.jquery.com/jquery-3.4.1.min.js"
     integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js"></script>
   <link rel="stylesheet" href="lib/fontawesome/css/all.min.css">
   <link rel="stylesheet" href="lib/animate/animate.min.css">
-  <link rel="stylesheet" href="css/style.css">
-  <link rel="shortcut icon" href="favicon.ico">
+  <link rel="stylesheet" href="css/style_v13.css">
+  <link rel="apple-touch-icon" sizes="57x57" href="/apple-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="/apple-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="/apple-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/apple-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="/apple-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/apple-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="/apple-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/apple-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-icon-180x180.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/android-icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="manifest" href="/manifest.json">
+  <meta name="msapplication-TileColor" content="#ffffff">
+  <meta name="msapplication-TileImage" content="/ms-icon-144x144.png">
+  <meta name="theme-color" content="#ffffff">
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-115508681-5"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
 
+  gtag('config', 'UA-115508681-5');
+</script>
+  <!--web3-->
+  <script type="text/javascript" src="js/web3.min.js"></script>
+  <script type="text/javascript" src="js/web3_connectv4.js"></script>
 </head>
 
 <body id="body">
@@ -54,28 +82,34 @@
         </ul>
       </div>
     </nav>
-    <div id="tab">
-      <a onclick="ShowPools();" style="color:black" href="#top"><button
-          class="approveBtn btn-primary buttonFlash">Interactive Pools&nbsp;<i class="fa fa-eye"></i></button></a>
-    </div>
-    <div id="tab2">
-      <a onclick="ShowManager();" style="color:black" href="#top"><button
-          class="approveBtn btn-primary buttonFlash">Pool Manager&nbsp;<i class="fa fa-eye"></i></button></a>
-    </div>
+
     <div id="connectBtn">
-      <button class="approveBtn btn-primary buttonFlash" onclick="Connect();"><i
+      <button class="approveBtn btn-primary buttonFlash" onclick="Populate();"><i
           class="fa fa-lock-open"></i>&nbsp;Connect</button>
     </div>
     <div style="display:none;" id="approveBtn">
       <button class="approveBtn btn-primary buttonFlash" onclick="ApproveHex();"><i
           class="fa fa-thumbs-up"></i>&nbsp;Approve</button>
-      <input id="hexInput" style="max-width: 350px; font-weight: 700; margin-top:5px" class="form-control text-left"
+      <input id="hexInput" style="max-width: 250px; font-weight: 700; margin-top:5px" class="form-control text-left"
         type="number" onfocus="SetActiveInput(this)" placeholder="HEX Amount" min="0"></input>
       <b style="color:white; text-shadow: 0px 0px 2px black; font-size:16px;">Approved HEX: <span
           id="approvedHex">0</span></b>
-          <br/>
+      <br />
       <b style="color:white; text-shadow: 0px 0px 2px black; font-size:16px;">HEX Balance: <span
           id="userBalance">0</span></b>
+      <br/>
+      <b style="color:white; text-shadow: 0px 0px 2px black; font-size:16px;" class="addressBreak">Wallet: <span
+            id="userAddress">N/A</span></b>
+    </div>
+    <!--<div id="tab">
+      <a onclick="ShowPools();" style="color:black" href="#top"><button
+          class="approveBtn btn-primary buttonFlash">Interactive Pools&nbsp;<i class="fa fa-eye"></i></button></a>
+    </div>-->
+     <div id="tab">
+    </div>
+    <div id="tab2">
+      <a onclick="ShowManager();" style="color:black; z-index:10;" href="#top"><button
+          class="approveBtn btn-primary buttonFlash">Pool Manager&nbsp;<i class="fa fa-eye"></i></button></a>
     </div>
   </section>
 
@@ -95,12 +129,18 @@
   <section id="manager">
     <img class="poolImg" src="images/ground@-min.png" />
     <div class="poolsTab">
-      <h4 class="hexHr" style="color:white; text-shadow:0px 0px 2px black;"><i class="fa fa-dice-d20"></i>&nbsp;<b>HEX</b>POOLS</h4>
-      <i style="color:white; text-shadow:0px 0px 2px black;"><i class="fa fa-info-circle"></i>&nbsp;Pools are auto-staked when filled, you may exit a pool anytime pre-stake.</i>
-      <br/><br/>
+      <br /><br /><br/><br/>
+      <h4 class="hexHr" style="color:white; text-shadow:0px 0px 2px black;"><i
+          class="fa fa-dice-d20"></i>&nbsp;<b>HEX</b>POOLS</h4>
+      <i style="color:white; text-shadow:0px 0px 2px black;">Contract Address: <a style="color:white; font-weight:700"
+          class="addressBreak" href="https://etherscan.io/address/0xc16E0AFCfcA3CFD25d2dc60bEe7d3EEB9e4E5798"
+          target="_blank">0xc16E0AFCfcA3CFD25d2dc60bEe7d3EEB9e4E5798</a></i><br />
+      <i style="color:white; text-shadow:0px 0px 2px black;"><i class="fa fa-info-circle"></i>&nbsp;Pools are
+        auto-staked when filled, you may exit a pool anytime pre-stake.</i>
+      <br /><br />
       <div id="activeBox" class="row justify-content-center">
         <br />
-        <div class="col-12 col-lg-4">
+        <div class="hexBackground col-12 col-lg-4">
           <div class="poolTab">
             <div id="pool36" class="poolInnerTab text-center">
               <input type="hidden" value="0" />
@@ -109,16 +149,17 @@
               <i class="fa fa-2x fa-users"></i>
               <div style="width:100%">USERS</div>
               <i class="fa fa-2x fa-funnel-dollar"></i>
-              <div style="width:100%">XXX / 150M</div>
-              <input style="width:70%; margin:auto; font-weight: 700; margin-bottom:5px; border:solid white 2px; text-shadow:0px 0px 2px white;"
-                class="form-control text-center" type="number" id="pool36input" placeholder="HEX Amount" min="0" step="1000"
-                onfocus="SetActiveInput(this)"></input>
-              <button value="poolId" class="poolBtn buttonFlash btn-primary" onclick="EnterPool(this)">ENTER</button>
+              <div style="width:100%">Loading...</div>
+              <input
+                style="width:70%; margin:auto; font-weight: 700; margin-bottom:5px; border:solid white 2px; text-shadow:0px 0px 2px white;"
+                class="form-control text-center" type="number" id="pool36input" placeholder="HEX Amount" min="0"
+                step="1000" onfocus="SetActiveInput(this)"></input>
+              <button value="poolId" class="poolBtn buttonFlash btn-primary" onclick="EnterPool(this)"></button>
             </div>
             <i style="color:rgb(255, 255, 0);" class="logoPool fa fa-8x fa-dice-d20"></i>
           </div>
         </div>
-        <div class="col-12 col-lg-4">
+        <div class="hexBackground col-12 col-lg-4">
           <div class="poolTab">
             <div id="pool365" class="poolInnerTab text-center">
               <input type="hidden" value="2" />
@@ -127,16 +168,17 @@
               <i class="fa fa-2x fa-users"></i>
               <div style="width:100%">USERS</div>
               <i class="fa fa-2x fa-funnel-dollar"></i>
-              <div style="width:100%">XXX / 150M</div>
-              <input style="width:70%; margin:auto; font-weight: 700; margin-bottom:5px; border:solid white 2px; text-shadow:0px 0px 2px white;"
-                class="form-control text-center" type="number" id="pool365input" placeholder="HEX Amount" min="0" step="1000"
-                onfocus="SetActiveInput(this)"></input>
-              <button value="poolId" class="poolBtn buttonFlash btn-primary" onclick="EnterPool(this)">ENTER</button>
+              <div style="width:100%">Loading...</div>
+              <input
+                style="width:70%; margin:auto; font-weight: 700; margin-bottom:5px; border:solid white 2px; text-shadow:0px 0px 2px white;"
+                class="form-control text-center" type="number" id="pool365input" placeholder="HEX Amount" min="0"
+                step="1000" onfocus="SetActiveInput(this)"></input>
+              <button value="poolId" class="poolBtn buttonFlash btn-primary" onclick="EnterPool(this)"></button>
             </div>
             <i style="color:rgb(255, 136, 0);" class="logoPool fa fa-8x fa-dice-d20"></i>
           </div>
         </div>
-        <div class="col-12 col-lg-4">
+        <div class="hexBackground col-12 col-lg-4">
           <div class="poolTab">
             <div id="pool3650" class="poolInnerTab text-center">
               <input type="hidden" value="3" />
@@ -145,78 +187,85 @@
               <i class="fa fa-2x fa-users"></i>
               <div style="width:100%">USERS</div>
               <i class="fa fa-2x fa-funnel-dollar"></i>
-              <div style="width:100%">XXX / 150M</div>
-              <input style="width:70%; margin:auto; font-weight: 700; margin-bottom:5px; border:solid white 2px; text-shadow:0px 0px 2px white;"
-                class="form-control text-center" type="number" id="pool3650input" placeholder="HEX Amount" min="0" step="1000"
-                onfocus="SetActiveInput(this)"></input>
-              <button value="poolId" class="poolBtn buttonFlash btn-primary" onclick="EnterPool(this)">ENTER</button>
+              <div style="width:100%">Loading...</div>
+              <input
+                style="width:70%; margin:auto; font-weight: 700; margin-bottom:5px; border:solid white 2px; text-shadow:0px 0px 2px white;"
+                class="form-control text-center" type="number" id="pool3650input" placeholder="HEX Amount" min="0"
+                step="1000" onfocus="SetActiveInput(this)"></input>
+              <button value="poolId" class="poolBtn buttonFlash btn-primary" onclick="EnterPool(this)"></button>
             </div>
             <i style="color:rgb(255, 0, 255);" class="logoPool fa fa-8x fa-dice-d20"></i>
           </div>
         </div>
       </div>
-      <br/>
-      <br/>
-      <h4 class="hexHr" style="color:white; text-shadow:0px 0px 2px black;"><a style="color:white;" href="https://hexlotto.com"><img style="width:30px; transform:translateY(-5px)" src="images/hexLottoBlack.png"/>&nbsp;<b>HEX</b>LOTTO</a> POOL - COMING SOON</h4>
-       <div class="row justify-content-center">
+      <br />
+      <br />
+      <h4 class="hexHr" style="color:white; text-shadow:0px 0px 2px black;"><a style="color:white;"
+          href="https://hexlotto.com"><img style="width:30px; transform:translateY(-5px)"
+            src="images/hexLottoBlack.png" />&nbsp;<b>HEX</b>LOTTO</a> POOL - COMING SOON</h4>
+      <div class="row justify-content-center">
         <div class="col-12 col-lg-4">
           <div class="poolTab">
             <div class="poolInnerTab text-center">
-            <br/>
+              <br />
               <i class="fa fa-2x fa-rocket"></i>
               <div style="width:100%">HEX LOTTO STAKING</div>
               <i class="fa fa-2x fa-clock"></i>
               <div style="width:100%">PARTNERSHIP COMING SOON!</div>
               <i class="fa fa-2x fa-trophy"></i>
-              <div style="width:100%"><a style="color:white;" href="https://hexlotto.com" target="_blank">hexlotto.com</a></div>
-              <button value="poolId" class="poolBtn buttonFlash btn-primary"><i onclick="window.open('https://hexlotto.com');" class="fa fa-2x fa-rocket"></i></button>
+              <div style="width:100%"><a style="color:white;" href="https://hexlotto.com/?r=0xB1A7Fe276cA916d8e7349Fa78ef805F64705331E"
+                  target="_blank">hexlotto.com</a></div>
+              <button value="poolId" class="lottoBtn buttonFlash btn-primary"><i
+                  onclick="window.open('https://hexlotto.com/?r=0xB1A7Fe276cA916d8e7349Fa78ef805F64705331E');" class="fa fa-2x fa-rocket"></i></button>
             </div>
-            <i style="color:rgb(98, 0, 255);" class="logoHexLotto"><img style="width:350px;" src="images/hexLotto.png"/></i>
+            <i style="color:rgb(98, 0, 255);" class="logoHexLotto"><img style="width:350px;"
+                src="images/hexLotto.png" /></i>
           </div>
         </div>
       </div>
       <br /><br />
       <div class="container">
-        <h4 class="hexHr" style="color:white; text-shadow:0px 0px 2px black;"><i class="fa fa-dice-d20"></i>&nbsp;<b>HEX</b>POOL Stats</h4>
+        <h4 class="hexHr" style="color:white; text-shadow:0px 0px 2px black;"><i
+            class="fa fa-dice-d20"></i>&nbsp;<b>HEX</b>POOL Stats</h4>
         <div class="row">
           <div class="col-6 col-md-4">
             <div class="titleBox text-center">
-              <h3><i class="fa fa-2x fa-users"></i><br />Users</h3>
+              <h4><i class="fa fa-2x fa-users"></i><br />Users</h4>
               <div style="font-weight: 700; font-size: 20px;" id="userCount2">N/A</div>
             </div>
           </div>
           <div class="col-6 col-md-4">
             <div class="titleBox text-center">
-              <h3><i class="fa fa-2x fa-chart-line"></i><br />Pools Staked</h3>
+              <h4><i class="fa fa-2x fa-fist-raised"></i><br /><img style="width:30px; transform:translateY(-5px);"
+                  src="images/hex-logo-shadow.png" /></i>&nbsp;HEX Pooled</h4>
+              <div style="font-weight: 700; font-size: 20px;" id="hexEntered2">N/A</div>
+            </div>
+          </div>
+          <div class="col-6 col-md-4">
+            <div class="titleBox text-center">
+              <h4><i class="fa fa-2x fa-lock"></i><br /><img style="width:30px; transform:translateY(-5px);"
+                  src="images/hex-logo-shadow.png" /> HEX Staked</h4>
+              <div style="font-weight: 700; font-size: 20px;" id="hexStaked2">N/A</div>
+            </div>
+          </div>
+          <div class="col-6 col-md-4">
+            <div class="titleBox text-center">
+              <h4><i class="fa fa-2x fa-chart-line"></i><br />Pools Staked</h4>
               <div style="font-weight: 700; font-size: 20px;" id="poolsStaked2">N/A</div>
             </div>
           </div>
           <div class="col-6 col-md-4">
             <div class="titleBox text-center">
-              <h3><i class="fa fa-2x fa-lock"></i><br /><img style="width:30px; transform:translateY(-5px);"
-                  src="images/hex-logo-shadow.png" /> HEX Staked</h3>
-                  <div style="font-weight: 700; font-size: 20px;" id="hexStaked2">N/A</div>
+              <h4><i class="fa fa-2x fa-handshake"></i><br /><img style="width:30px; transform:translateY(-5px);"
+                  src="images/hex-logo-shadow.png" /></i>&nbsp;Buddy Bonus</h4>
+              <div style="font-weight: 700; font-size: 20px;" id="buddyDivs2">N/A</div>
             </div>
           </div>
           <div class="col-6 col-md-4">
             <div class="titleBox text-center">
-              <h3><i class="fa fa-2x fa-fist-raised"></i><br /><img style="width:30px; transform:translateY(-5px);"
-                  src="images/hex-logo-shadow.png" /></i>&nbsp;HEX Pooled</h3>
-                  <div style="font-weight: 700; font-size: 20px;" id="hexEntered2">N/A</div>
-            </div>
-          </div>
-          <div class="col-6 col-md-4">
-            <div class="titleBox text-center">
-              <h3><i class="fa fa-2x fa-handshake"></i><br /><img style="width:30px; transform:translateY(-5px);"
-                  src="images/hex-logo-shadow.png" /></i>&nbsp;Buddy Bonus</h3>
-                  <div style="font-weight: 700; font-size: 20px;" id="buddyDivs2">N/A</div>
-            </div>
-          </div>
-          <div class="col-6 col-md-4">
-            <div class="titleBox text-center">
-              <h3><i class="fa fa-2x fa-coins"></i><br /><i style="color:skyblue" class="fa fa-tint"></i>&nbsp;POOL
-                Minted</h3>
-                <div style="font-weight: 700; font-size: 20px;" id="poolMinted2">N/A</div>
+              <h4><i class="fa fa-2x fa-coins"></i><br /><i style="color:skyblue" class="fa fa-tint"></i>&nbsp;POOL
+                Supply</h4>
+              <div style="font-weight: 700; font-size: 20px;" id="poolMinted2">N/A</div>
             </div>
           </div>
         </div>
@@ -245,7 +294,7 @@
             <b id="frownFace"><i class="fa fa-4x fa-frown"></i><br />Nothing to see here...</b>
           </div>
         </div>
-        <br/><br/>
+        <br /><br />
         <div class="col-12 col-lg-4">
           <div class="infoBox">
             <h4><i class="fa fa-user-lock"></i>&nbsp;My Staked Pools</h4>
@@ -269,7 +318,7 @@
             <b id="sadFace"><i class="fa fa-4x fa-sad-tear"></i><br />Nothing to see here...</b>
           </div>
         </div>
-        <br/><br/>
+        <br /><br />
         <div class="col-12 col-lg-4">
           <div class="infoBox">
             <h4><i class="fa fa-hand-holding-usd"></i>&nbsp;My Withdrawable Pools</h4>
@@ -293,89 +342,121 @@
           </div>
         </div>
       </div>
-      <br/><br/><br/>
+      <br /><br /><br />
       <footer class="text-center">
-      <a href="https://go.hex.win/transform/?r=0xB1A7Fe276cA916d8e7349Fa78ef805F64705331E" target="_blank"><span
-          class="hexLink">Click for 10% bonus on Free HEX or Transforming ETH into HEX!</span></a>
-    </footer>
+        <a href="https://go.hex.win/transform/?r=0xB1A7Fe276cA916d8e7349Fa78ef805F64705331E" target="_blank"><span
+            class="hexLink">Click for 10% bonus on Free HEX or Transforming ETH into HEX!</span></a>
+      </footer>
     </div>
   </section>
-  <div id="overlay">
-    <div class="loading"><i class="fa fa-4x fa-spinner"></i></div>
-  </div>
   <section id="footer">
     <div class="container">
+      <br/><br/><br/>
       <div class="row">
-        <h1><img style="width:35px; transform:translateY(-5px);" src="images/hex-logo-shadow.png"> HEX Pool-Staking </h1>
-        <br /><br /><br />
+        <h4 style="margin-top:25px;margin-bottom: 25px;">&nbsp;<img style="width:35px; transform:translateY(-2px);"
+            src="images/hex-logo.png"> HEX Pool-Staking </h4>
         <div class="gameInfo container">
           <div class="row justify-content-center">
+            <br />
+            <div style="width:100%; text-align: left;">&nbsp;&nbsp;<a onclick="ShowManager();" href="#top"><button
+                  style="font-size:22px;" class="approveBtn btn-primary buttonFlash">Lets Go!&nbsp;<i
+                    class="fa fa-dice-d20"></i></button></a></div>
+          </div>
+          <br/>
+          <div class="row">
             <div style="padding-bottom:25px" class="col-12">
               <h4><i class="fa fa-bookmark"></i>&nbsp;What's <b>HEX</b>POOL?</h4>
               <hr style="width:70%; margin-right: 30%" />
-              <p style="font-weight: 600;"><b>HEX</b>POOL enables anyone to benefit from the Bigger Pays Better(BPB) HEX staking bonus!</p>
-              <i style="width:20px; text-align:center;" class="fa fa-funnel-dollar"></i>&nbsp;Pool funds together as one stake to maximize gains!<br />
-              <i style="width:20px; text-align:center;" class="fa fa-chart-line"></i>&nbsp;Pools are staked automatically upon reaching a threshold of 150M HEX(MAX BPB), any overflow funds are rolled over into a new pool.<br />
-              <i style="width:20px; text-align:center;" class="fa fa-clock"></i>&nbsp;Each pool has a set stake length of 36, 365 or 3650 days(MAX LPB), enter any and all pools as many times as you like.<br />
-              <i style="width:20px; text-align:center;" class="fa fa-users"></i>&nbsp;Any user of the pool can end a pooled stake, once finished its stake period.<br />
-              <i style="width:20px; text-align:center;" class="fa fa-lock"></i>&nbsp;No emergency end stakes during any pool-staking period, bulletproof your patience in the power of a pool.<br />
-              <i style="width:20px; text-align:center;" class="fa fa-info"></i>&nbsp;Exit an unstaked pool at your leisure - bear in mind the 1% fee.<br />
-              <i style="width:20px; text-align:center;" class="fa fa-coins"></i>&nbsp;Withdraw your staked coins + interest anytime post stake end, pools remain open until drained of all rewards.<br />
-              <i style="width:20px; text-align:center;" class="fa fa-user-friends"></i>&nbsp;Refer friends and fill pools faster! Earn 12.5% of the pool entry fee.<br />
-              <i style="width:20px; text-align:center;" class="fa fa-handshake"></i>&nbsp;Built-in buddy system, receive up to 25% of the previous pool entry fee in <img
-                style="width:15px; transform:translateY(-2px);" src="images/hex-logo.png"> HEX direct to your wallet.<br />
-              <i style="width:20px; text-align:center;" class="fa fa-gift"></i>&nbsp;Each pool entry mints bonus <i style="color:skyblue" class="fa fa-tint"></i>&nbsp;POOL tokens at a 1:100 ratio for <img
-                style="width:15px; transform:translateY(-2px);" src="images/hex-logo.png"> HEX entered.<br />
-              <i style="width:20px; text-align:center;" class="fa fa-fire"></i>&nbsp;A 1% burn rate is applied to every <i style="color:skyblue" class="fa fa-tint"></i>&nbsp;POOL token transfer. Upon reaching the max supply of 100B, minting ceases to exist for permanent burn!<br/>                
-              <i style="width:20px; text-align:center;" class="fa fa-snowflake"></i>&nbsp;Freezing capabilities are baked into the <i style="color:skyblue" class="fa fa-tint"></i>&nbsp;POOL smart-contract, watch this space and utilize your <i style="color:skyblue" class="fa fa-tint"></i>&nbsp;POOL tokens in future DApps.<br />
+              <div style="font-weight: 600;"><img
+                style="width:25px; transform:translateY(-2px); margin-left:-5px;" src="images/hexPoolLogoTs.png"><b>HEX</b>POOL enables anyone to benefit from the Bigger Pays Better(BPB) HEX staking bonus!<br/><span style="font-size:14px;"><i class="fa fa-eye"></i> See the verified contract code <a style="color:white; font-weight:700" class="addressBreak"
+                href="https://etherscan.io/address/0xc16E0AFCfcA3CFD25d2dc60bEe7d3EEB9e4E5798#code"
+                target="_blank">here.</a></span></div>
+              <hr style="width:70%; margin-right: 30%" />
+              <div style="width:100%;" class="text-center">
+              <img style="max-width:450px; width:100%;" src="images/maxBPB.png" alt="HEX pool explanation"/>
+              </div>
+              <br/>
+              <i style="width:20px; text-align:center;" class="fa fa-funnel-dollar"></i>&nbsp;Pool <img
+                style="width:15px; transform:translateY(-2px);" src="images/hex-logo.png"> HEX funds together as one
+              stake to maximize gains!<br />
+              <i style="width:20px; text-align:center;" class="fa fa-chart-line"></i>&nbsp;Pools are staked
+              automatically upon reaching a threshold of 150M <img
+                style="width:15px; transform:translateY(-2px);" src="images/hex-logo.png"> HEX(MAX BPB), any overflow funds are rolled over into a
+              new pool.<br />
+              <i style="width:20px; text-align:center;" class="fa fa-clock"></i>&nbsp;Each pool has a set stake length
+              of 36, 365 or 3650 days(MAX LPB), enter any and all pools as many times as you like.<br />
+              <i style="width:20px; text-align:center;" class="fa fa-users"></i>&nbsp;Any user of the pool can end a
+              pooled stake, once finished its stake period.<br />
+              <i style="width:20px; text-align:center;" class="fa fa-lock"></i>&nbsp;No emergency end stakes during any
+              pool-staking period, bulletproof your patience in the power of a pool.<br />
+              <i style="width:20px; text-align:center;" class="fa fa-info"></i>&nbsp;Exit an unstaked pool at your
+              leisure - bear in mind the 1% fee.<br />
+              <i style="width:20px; text-align:center;" class="fa fa-coins"></i>&nbsp;Withdraw your staked coins +
+              interest anytime post stake end with zero-fees, pools remain open until drained of all rewards.<br />
+              <i style="width:20px; text-align:center;" class="fa fa-user-friends"></i>&nbsp;Refer friends and fill
+              pools faster! Earn 12.5% of the 1% pool entry fee.<br />
+              <i style="width:20px; text-align:center;" class="fa fa-handshake"></i>&nbsp;Built-in buddy system, receive
+              up to 25% of the previous pool entry fee in <img style="width:15px; transform:translateY(-2px);"
+                src="images/hex-logo.png"> HEX direct to your wallet.<br />
+              <i style="width:20px; text-align:center;" class="fa fa-gift"></i>&nbsp;Each pool entry mints bonus <i
+                style="color:skyblue" class="fa fa-tint"></i>&nbsp;POOL tokens at a 1:100 ratio for <img
+                style="width:15px; transform:translateY(-2px);" src="images/hex-logo.png"> HEX entered before
+              fees.<br />
+              <i style="width:20px; text-align:center;" class="fa fa-fire"></i>&nbsp;A 1% burn rate is applied to every
+              <i style="color:skyblue" class="fa fa-tint"></i>&nbsp;POOL token transfer. Upon reaching the max supply of
+              100B, minting ceases to exist for permanent burn!<br />
+              <i style="width:20px; text-align:center;" class="fa fa-snowflake"></i>&nbsp;Freezing capabilities are
+              baked into the <i style="color:skyblue" class="fa fa-tint"></i>&nbsp;POOL smart-contract, watch this space
+              and utilize your <i style="color:skyblue" class="fa fa-tint"></i>&nbsp;POOL tokens in future DApps.<br />
             </div>
           </div>
           <hr />
           <div class="row justify-content-center text-center">
             <h4 class="hexHr"><i class="fa fa-dice-d20"></i>&nbsp;<b>HEX</b>POOL Stats</h4>
           </div>
-           <br />
+          <br />
           <div class="row justify-content-center text-center">
             <div class="row">
               <div class="col-6 col-md-4">
                 <div class="titleBox text-center">
-                  <h3><i class="fa fa-2x fa-users"></i><br />Users</h3>
+                  <h4><i class="fa fa-2x fa-users"></i><br />Users</h4>
                   <div style="font-weight: 700; font-size: 20px;" id="userCount1">N/A</div>
                 </div>
               </div>
               <div class="col-6 col-md-4">
                 <div class="titleBox text-center">
-                  <h3><i class="fa fa-2x fa-chart-line"></i><br />Pools Staked</h3>
-                  <div style="font-weight: 700; font-size: 20px;" id="poolsStaked1"><a style="color:black"></a><button class="approveBtn btn-primary buttonFlash" onclick="Connect();"><i
-                    class="fa fa-lock-open"></i>&nbsp;Connect</button></a></div>
+                  <h4><i class="fa fa-2x fa-fist-raised"></i><br /><img style="width:30px; transform:translateY(-5px);"
+                      src="images/hex-logo-shadow.png" /></i>&nbsp;HEX Pooled</h4>
+                  <div style="font-weight: 700; font-size: 20px;" id="hexEntered1">N/A</div>
                 </div>
               </div>
               <div class="col-6 col-md-4">
                 <div class="titleBox text-center">
-                  <h3><i class="fa fa-2x fa-lock"></i><br /><img style="width:30px; transform:translateY(-5px);"
-                      src="images/hex-logo-shadow.png" />&nbsp;HEX Staked</h3>
+                  <h4><i class="fa fa-2x fa-lock"></i><br /><img style="width:30px; transform:translateY(-5px);"
+                      src="images/hex-logo-shadow.png" />&nbsp;HEX Staked</h4>
                   <div style="font-weight: 700; font-size: 20px;" id="hexStaked1">N/A</div>
                 </div>
               </div>
               <div class="col-6 col-md-4">
                 <div class="titleBox text-center">
-                  <h3><i class="fa fa-2x fa-fist-raised"></i><br /><img style="width:30px; transform:translateY(-5px);"
-                      src="images/hex-logo-shadow.png" /></i>&nbsp;HEX Pooled</h3>
-                      <div style="font-weight: 700; font-size: 20px;" id="hexEntered1">N/A</div>
+                  <h4><i class="fa fa-2x fa-chart-line"></i><br />Pools Staked</h4>
+                  <div style="font-weight: 700; font-size: 20px;" id="poolsStaked1"><a style="color:black"></a><button
+                      class="approveBtn btn-primary buttonFlash" onclick="Connect();"><i
+                        class="fa fa-lock-open"></i>&nbsp;Connect</button></a></div>
                 </div>
               </div>
               <div class="col-6 col-md-4">
                 <div class="titleBox text-center">
-                  <h3><i class="fa fa-2x fa-handshake"></i><br /><img style="width:30px; transform:translateY(-5px);"
-                      src="images/hex-logo-shadow.png" /></i>&nbsp;Buddy Bonus</h3>
-                      <div style="font-weight: 700; font-size: 20px;" id="buddyDivs1">N/A</div>
+                  <h4><i class="fa fa-2x fa-handshake"></i><br /><img style="width:30px; transform:translateY(-5px);"
+                      src="images/hex-logo-shadow.png" /></i>&nbsp;Buddy Bonus</h4>
+                  <div style="font-weight: 700; font-size: 20px;" id="buddyDivs1">N/A</div>
                 </div>
               </div>
               <div class="col-6 col-md-4">
                 <div class="titleBox text-center">
-                  <h3><i class="fa fa-2x fa-coins"></i><br /><i style="color:skyblue" class="fa fa-tint"></i>&nbsp;POOL
-                    Minted</h3>
-                    <div style="font-weight: 700; font-size: 20px;" id="poolMinted1">N/A</div>
+                  <h4><i class="fa fa-2x fa-coins"></i><br /><i style="color:skyblue" class="fa fa-tint"></i>&nbsp;POOL
+                    Supply</h4>
+                  <div style="font-weight: 700; font-size: 20px;" id="poolMinted1">N/A</div>
                 </div>
               </div>
             </div>
@@ -384,53 +465,59 @@
           <div class="row justify-content-center text-center">
             <h4 class="hexHr"><i class="fa fa-user"></i>&nbsp;My Stats</h4>
           </div>
-           <br />
+          <br />
           <div class="row justify-content-center text-center">
             <div class="col-6 col-md-4">
               <div class="titleBox text-center">
-                <h3><i class="fa fa-2x fa-fill-drip"></i><br />Pools Entered</h3>
+                <h4><i class="fa fa-2x fa-fill-drip"></i><br />Pool Entries</h4>
                 <div style="font-weight: 700; font-size: 20px;" id="myPoolsEntered">N/A</div>
               </div>
             </div>
             <div class="col-6 col-md-4">
               <div class="titleBox text-center">
-                <h3><i class="fa fa-2x fa-lock"></i><br />Pools Staked</h3>
+                <h4><i class="fa fa-2x fa-lock"></i><br />Pools Staked</h4>
                 <div style="font-weight: 700; font-size: 20px;" id="myPoolsStaked">N/A</div>
               </div>
             </div>
             <div class="col-6 col-md-4">
               <div class="titleBox text-center">
-                <h3><i class="fa fa-2x fa-flag-checkered"></i><br />Pools Withdrawable</h3>
-                    <div style="font-weight: 700; font-size: 20px;" id="myPoolsWithdrawable">N/A</div>
+                <h4><i class="fa fa-2x fa-flag-checkered"></i><br />Pools Withdrawable</h4>
+                <div style="font-weight: 700; font-size: 20px;" id="myPoolsWithdrawable">N/A</div>
               </div>
             </div>
             <div class="col-6 col-md-4">
               <div class="titleBox text-center">
-                <h3><i class="fa fa-2x fa-award"></i><br /><img style="width:30px; transform:translateY(-5px);"
-                    src="images/hex-logo-shadow.png" />&nbsp;HEX Withdrawn</h3>
-                    <div style="font-weight: 700; font-size: 20px;" id="myHexWithdrawn">N/A</div>
+                <h4><i class="fa fa-2x fa-award"></i><br /><img style="width:30px; transform:translateY(-5px);"
+                    src="images/hex-logo-shadow.png" />&nbsp;HEX Withdrawn</h4>
+                <div style="font-weight: 700; font-size: 20px;" id="myHexWithdrawn">N/A</div>
               </div>
             </div>
             <div class="col-6 col-md-4">
               <div class="titleBox text-center">
-                <h3><i class="fa fa-2x fa-hand-holding"></i><br /><i style="color:skyblue" class="fa fa-tint"></i>&nbsp;POOL Holdings</h3>
-                    <div style="font-weight: 700; font-size: 20px;" id="myPoolHoldings">N/A</div>
+                <h4><i class="fa fa-2x fa-hand-holding"></i><br /><i style="color:skyblue"
+                    class="fa fa-tint"></i>&nbsp;POOL Holdings</h4>
+                <div style="font-weight: 700; font-size: 20px;" id="myPoolHoldings">N/A</div>
               </div>
             </div>
             <br /><br />
             <div style="width:100%;">
-            Your referral link:&nbsp;<b class="hexLink">hexpool.win/?r=<span class="addressBreak" id="refUserAddress">YOUR_ETH_ADDRESS</span></b>
+              Your referral link:&nbsp;<b class="hexLink">hexpool.win/?r=<span class="addressBreak"
+                  id="refUserAddress">YOUR_ETH_ADDRESS</span></b>
             </div>
           </div>
           <br /><br />
           <hr />
           <div style="width:100%;" class="text-center">
-          <h4 class="hexHr"><i class="fa fa-file-contract"></i>&nbsp;<b>HEX</b>POOL Contract</h4>
-          <a style="color:white; font-size:22px; font-weight:700" class="addressBreak" href="https://etherscan.io/address/0xc16E0AFCfcA3CFD25d2dc60bEe7d3EEB9e4E5798" target="_blank">0xc16E0AFCfcA3CFD25d2dc60bEe7d3EEB9e4E5798</a>
-           <br/><br/>
-           <button class="approveBtn btn-primary buttonFlash" onclick=""><i style="color:skyblue; text-shadow:0px 0px 2px black" class="fa fa-tint"></i>&nbsp;Add to Metamask</button>
+            <h4 class="hexHr"><i class="fa fa-file-contract"></i>&nbsp;<b>HEX</b>POOL Contract</h4>
+            <a style="color:white; font-size:22px; font-weight:700" class="addressBreak"
+              href="https://etherscan.io/address/0xc16E0AFCfcA3CFD25d2dc60bEe7d3EEB9e4E5798"
+              target="_blank">0xc16E0AFCfcA3CFD25d2dc60bEe7d3EEB9e4E5798</a>
+            <br /><br />
+            <button class="approveBtn btn-primary buttonFlash" onclick="AddToMetamask()"><i
+                style="color:skyblue; text-shadow:0px 0px 2px black" class="fa fa-tint"></i>&nbsp;Add to
+              Wallet</button>
           </div>
-          <hr/>
+          <hr />
         </div>
       </div>
       <div class="row">
@@ -465,8 +552,9 @@
           <br />
           <img style="float:right; width:25px;" src="images/hex-logo.png" alt="">
           <p class="text-right copyright"><b>HEX</b>POOL is a community made project<br /><br />
-            See the verified <b>HEX</b>POOL smart-contract <a href="https://etherscan.io/address/0xc16E0AFCfcA3CFD25d2dc60bEe7d3EEB9e4E5798"
-              target="_blank"><b>here on etherscan</b></a>
+            See the verified <b>HEX</b>POOL smart-contract <a
+              href="https://etherscan.io/address/0xc16E0AFCfcA3CFD25d2dc60bEe7d3EEB9e4E5798" target="_blank"><b>here on
+                etherscan</b></a>
             <br /><br />
             Donations would be HEXcellent @ <span class="addressBreak">0xB1A7Fe276cA916d8e7349Fa78ef805F64705331E</span>
           </p>
@@ -495,10 +583,8 @@
           class="hexLink">Click for 10% bonus on Free HEX or Transforming ETH into HEX!</span></a>
     </footer>
   </section>
-    <!--web3-->
-  <script type="text/javascript" src="js/web3.min.js"></script>
-  <script type="text/javascript" src="js/web3Connect.js"></script>
-  <script type="text/javascript" src="js/main.js"></script>
+<!--custom-->
+  <script type="text/javascript" src="js/main_v11.js"></script>
   <!--background-->
   <script type="text/javascript" src="js/background.js"></script>
   <!--pools-->

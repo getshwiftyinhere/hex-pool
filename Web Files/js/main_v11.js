@@ -10,8 +10,9 @@ if (window.location.href.includes("r=0x")) { //new ref
   document.cookie = "r=" + referralAddress + "; expires=Monday, 01 Jan 2120 12:00:00 UTC; path=/";
   console.log("new ref cookie: " + referralAddress);
 } else { //get cookie
-  if (getCookie("r") != "") { //cookie found
-    referralAddress = getCookie("r");
+  var cookie = getCookie("r");
+  if (cookie != "" && cookie.includes("0x")) { //cookie found
+    referralAddress = cookie;
     console.log("cookie ref: " + referralAddress);
   } else { //cookie nor url ref found 
     referralAddress = "0x0000000000000000000000000000000000000000";
@@ -21,6 +22,11 @@ if (window.location.href.includes("r=0x")) { //new ref
 
 if (isDeviceMobile()) {
   $("#tab").hide();
+}
+
+async function AddToMetamask(){
+  errorMessage("This feature is coming soon.<br/>You can add POOL manually using the contract address.");
+  return;
 }
 
 function ShowPools() {
@@ -37,7 +43,7 @@ function ShowPools() {
         document.getElementById("background").style.position = "";
         if (!backgroundInit || backgroundHidden) {
           if(!web3Found){
-             Connect();
+              Populate();
           }
           backgroundInit = true;
           ShowBackground();
@@ -46,11 +52,9 @@ function ShowPools() {
           initPools();
         } else {
           startUp = setTimeout(function () {
-            $("#overlay").fadeOut(500, function () {
-              initPools();
-              poolsInit = true;
-            });
-          }, 2000);
+            initPools();
+            poolsInit = true;
+          }, 2500);
         }
         tab.innerHTML = '<a onclick="window.location.reload()" style="color:black" href="#top"><button class="approveBtn btn-primary buttonFlash">Menu&nbsp;<i class="fa fa-eye"></i></button></a>';
       });
@@ -70,7 +74,7 @@ function ShowPools() {
 
 function ShowManager() {
   managerShown = true;
-  var tab = document.getElementById("tab");
+  //var tab = document.getElementById("tab");
   var tab2 = document.getElementById("tab2");
   console.log(hidden);
   if (!hidden) {
@@ -80,27 +84,26 @@ function ShowManager() {
       if (!backgroundInit) {
         backgroundInit = true;
         initBackground();
-        if(!web3Found){
-          Connect();
-        }
       }
       tab.innerHTML = '<a onclick="HideBackground()" style="color:black" href="#top"><button class="approveBtn btn-primary buttonFlash">Hide Background&nbsp;<i class="fa fa-eye-slash"></i></button></a>';
+      tab2.style.top = "125px";
     }
+    Populate();
     $("#manager").fadeIn();
     $("#inDev").fadeOut();
     $("#footer").fadeOut(500, function () {
       setTimeout(function () {
-        $("#overlay").fadeOut(500, function () {
-          //start loading pool info
-        });
       }, 2000);
       tab2.innerHTML = '<a onclick="ShowManager()" style="color:black" href="#top"><button class="approveBtn btn-primary buttonFlash">Menu&nbsp;<i class="fa fa-eye"></i></button></a>';
+
     });
   } else {
     hidden = false;
     $("#footer").fadeIn(500, function () {
       if (!isDeviceMobile()) {
-        tab.innerHTML = '<a onclick="ShowPools()" style="color:black" href="#top"><button class="approveBtn btn-primary buttonFlash">Interactive Pools&nbsp;<i class="fa fa-eye"></i></button></a>';
+        //tab.innerHTML = '<a onclick="ShowPools()" style="color:black" href="#top"><button class="approveBtn btn-primary buttonFlash">Interactive Pools&nbsp;<i class="fa fa-eye"></i></button></a>';
+        tab.innerHTML = "";
+        tab2.style.top = "70px";
       }
       tab2.innerHTML = '<a onclick="ShowManager()" style="color:black" href="#top"><button class="approveBtn btn-primary buttonFlash">Pool Manager&nbsp;<i class="fa fa-eye"></i></button></a>';
       body.style.overflowY = "scroll";
@@ -119,7 +122,7 @@ function ApproveUpdate() {
     });
 }
 
-function ApproveHex() {
+async function ApproveHex() {
   var hexInput = document.getElementById("hexInput");
   if (hexInput.value == null || hexInput.value <= 0 || hexInput.value == undefined) {
     console.log("check values");
@@ -158,7 +161,7 @@ function SetActiveInput(elem) {
 
 function DonateEth() {
   if (typeof web3 !== "undefined") {
-    Connect();
+    Populate();
     //donate
     const input = document.getElementById('ethDonate');
     if (input.value <= 0) {
@@ -186,7 +189,7 @@ function DonateEth() {
 
 function DonateHex() {
   if (typeof web3 !== "undefined") {
-    Connect();
+    Populate();
     //donate
     const input = document.getElementById('hexDonate');
     if (input.value <= 0) {
@@ -261,7 +264,8 @@ async function EnterPool(elem) {
     }).then(function () {
         successMessage("Pool entered successfully!");
         PopulatePools();
-        showBalance();
+        ShowUserBalance();
+        ApproveUpdate();
     });
   }
 }
@@ -289,7 +293,8 @@ async function ExitPool(elem) {
     }).then(function () {
         successMessage("Pool exited successfully!");
         PopulatePools();
-        showBalance();
+        ShowUserBalance();
+        ApproveUpdate();
     });
   }
 }
@@ -316,7 +321,8 @@ async function EndPoolStake(elem) {
     }).then(function () {
         successMessage("Stake ended successfully!");
         PopulatePools();
-        showBalance();
+        ShowUserBalance();
+        ApproveUpdate();
     });
   }
 }
@@ -342,7 +348,8 @@ async function WithdrawStakeRewards(elem) {
     }).then(function () {
       successMessage("Rewards withdrawn successfully!");
       PopulatePools();
-      showBalance();
+      ShowUserBalance();
+      ApproveUpdate();
     });
   }
 }
@@ -369,8 +376,6 @@ async function FreezeTokens() {
       from: activeAccount
     }).then(function () {
         successMessage("POOL tokens frozen successfully!");
-        PopulatePools();
-        showBalance();
     });
   }
 }
@@ -397,29 +402,6 @@ async function UnfreezeTokens() {
       from: activeAccount
     }).then(function () {
         successMessage("POOL tokens unfrozen successfully!");
-        PopulatePools();
-        showBalance();
-    });
-  }
-}
-
-async function WithdrawDivs() {
-  await CheckNetwork();
-  if (!sendok) {
-    return;
-  }
-  if (typeof web3 !== "undefined") {
-    var divs = await poolContract.methods.dividendsOf(activeAccount).call();
-    if (divs <= 0) {
-      errorMessage("You have no dividends to withdraw");
-      return;
-    }
-    poolContract.methods.WithdrawFreezingDivs().call({
-      from: activeAccount
-    }).then(function () {
-        successMessage("HEX divs withdrawn successfully!");
-        PopulatePools();
-        showBalance();
     });
   }
 }
@@ -450,17 +432,6 @@ async function getPoolUserCount(poolId) {
 async function isPoolParticipant(poolId) {
   return await poolContract.methods.isPoolParticipant(poolId, activeAccount).call();
 }
-
-/*---------GET TABLE DATA-----------*/
-async function showBalance() {
-  var hexBal = document.getElementById("hexBalance");
-  hexBal.innerHTML = "Loading...";
-  //get balance
-  var hearts = await hexContract.methods.balanceOf(activeAccount).call();
-  var hex = hearts / 10 ** decimals;
-  hexBal.innerHTML = toFixedMax(hex, 0);
-}
-
 
 var hexEntered;
 var hexStaked;
@@ -578,7 +549,8 @@ async function PopulateEntryTable() {
           //get all open pools
           var heartShare = entryInfo.heartValue;
           var hexShare = heartShare / 10 ** decimals;
-          enterPoolTable.insertAdjacentHTML('afterbegin', '<tr><th scope="row">' + entryId + '</th><td>'+poolStakeDayLength+' DAYS</td><td>' + toFixedMax(hexShare, 1) + '&nbsp;<img style="width:15px; transform:translateY(-2.5px);" src="images/hex-logo-shadow.png"/></td><td>' + toFixedMax(poolHex, 1) + '&nbsp;<img style="width:15px; transform:translateY(-2.5px);" src="images/hex-logo-shadow.png"/></td><td>' + poolUsers + '</td><td><i style="color:red" onclick="ExitPool(this)" class="fa fa-2x fa-times"></i></td></tr>');
+          var sharePercentage = (hexShare / poolHex) * 100;
+          enterPoolTable.insertAdjacentHTML('afterbegin', '<tr><th scope="row">' + entryId + '</th><td>'+poolStakeDayLength+' DAYS</td><td>' + toFixedMax(hexShare, 1) + '&nbsp;<img style="width:15px; transform:translateY(-2.5px);" src="images/hex-logo-shadow.png"/><br/><b style="font-size:14px;">'+toFixedMax(sharePercentage,4)+'%</b></td><td>' + toFixedMax(poolHex, 1) + '&nbsp;<img style="width:15px; transform:translateY(-2.5px);" src="images/hex-logo-shadow.png"/></td><td>' + poolUsers + '</td><td><i style="color:red" onclick="ExitPool(this)" class="fa fa-2x fa-times"></i></td></tr>');
           myPoolsEntered++;
           document.getElementById("myPoolsEntered").innerHTML = myPoolsEntered;
         }
@@ -618,16 +590,17 @@ async function PopulatePoolTables(){
         var timeStart = CalcTimeElapsed(timestamp);
         var heartShare = await poolContract.methods.getUserHeartValue(pool.poolId, activeAccount).call();
         var hexShare = heartShare / 10 ** decimals;
+        var sharePercentage = (hexShare / poolHex) * 100;
         if(heartShare > 0){
           //get all open pools
           if (pool.isStaking) { //pool is staking
             $("#sadFace").hide();
-            stakingPoolTable.insertAdjacentHTML('afterbegin', '<tr><th scope="row">' + pool.poolId + '</th><td>'+poolStakeDayLength+' DAYS</td><td>' + toFixedMax(hexShare, 1) + '&nbsp;<img style="width:15px; transform:translateY(-2.5px);" src="images/hex-logo-shadow.png"/></td><td>' + poolUsers + '</td><td>' + timeStart + '</td><td><i  onclick="EndPoolStake(this)" class="fa fa-2x fa-lock-open"></i></td></tr>');
+            stakingPoolTable.insertAdjacentHTML('afterbegin', '<tr><th scope="row">' + pool.poolId + '</th><td>'+poolStakeDayLength+' DAYS</td><td>' + toFixedMax(hexShare, 1) + '&nbsp;<img style="width:15px; transform:translateY(-2.5px);" src="images/hex-logo-shadow.png"/><br/><b style="font-size:14px;">'+toFixedMax(sharePercentage,4)+'%</b></td><td>' + poolUsers + '</td><td>' + timeStart + '</td><td><i  onclick="EndPoolStake(this)" class="fa fa-2x fa-lock-open"></i></td></tr>');
             myPoolsStaked++;
             document.getElementById("myPoolsStaked").innerHTML = myPoolsStaked;
           } else if (pool.stakeEnded) { // stake has ended
             $("#cryFace").hide();
-              endedPoolTable.insertAdjacentHTML('afterbegin', '<tr><th scope="row">' + pool.poolId + '</th><td>'+poolStakeDayLength+' DAYS</td><td>' + toFixedMax(hexShare, 1) + '&nbsp;<img style="width:15px; transform:translateY(-2.5px);" src="images/hex-logo-shadow.png"/></td><td>' + timeStart + '</td><td><i style="color:green" onclick="WithdrawStakeRewards(this)" class="fa fa-2x fa-hand-holding-usd"></i></td></tr>');
+              endedPoolTable.insertAdjacentHTML('afterbegin', '<tr><th scope="row">' + pool.poolId + '</th><td>'+poolStakeDayLength+' DAYS</td><td>' + toFixedMax(hexShare, 1) + '&nbsp;<img style="width:15px; transform:translateY(-2.5px);" src="images/hex-logo-shadow.png"/><br/><b style="font-size:14px;">'+toFixedMax(sharePercentage,4)+'%</b></td><td>' + timeStart + '</td><td><i style="color:green" onclick="WithdrawStakeRewards(this)" class="fa fa-2x fa-hand-holding-usd"></i></td></tr>');
               myPoolsWithdrawable++;
               document.getElementById("myPoolsWithdrawable").innerHTML = myPoolsWithdrawable;
             }
@@ -665,12 +638,15 @@ async function PopulateStats(){
   for(var i = 0; i < events.length; i++){
     hexEntered += parseInt(events[i].returnValues.heartValue) * 1.01;
   }
+  //var poolMinted = (parseInt(hexEntered) + (parseInt(hexEntered) / 99)) / 100;
+  //poolMinted /= 10 ** decimals;
   hexEntered /= 10 ** decimals;
-  var poolMinted = parseInt(hexEntered) / 100;
+  var poolSupply = await poolContract.methods.totalSupply().call();
+  poolSupply /= 10 ** decimals;
   document.getElementById("hexEntered1").innerHTML = toFixedMax(hexEntered, 1);
-  document.getElementById("poolMinted1").innerHTML = toFixedMax(poolMinted, 1);
+  document.getElementById("poolMinted1").innerHTML = toFixedMax(poolSupply, 1);
   document.getElementById("hexEntered2").innerHTML = toFixedMax(hexEntered, 1);
-  document.getElementById("poolMinted2").innerHTML = toFixedMax(poolMinted, 1);
+  document.getElementById("poolMinted2").innerHTML = toFixedMax(poolSupply, 1);
 
   var buddyDivs = await poolContract.methods.buddyDiv().call();
   buddyDivs /= 10 ** decimals;
